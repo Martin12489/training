@@ -231,6 +231,67 @@ html,body{height:100%;background:#0E0E0C;font-family:-apple-system,BlinkMacSyste
 .navi.active .ni,.navi.active .nl{color:var(--green)}
 .view{display:none}.view.show{display:block}
 #fileInput{display:none}
+.habit-section{margin-bottom:16px}
+.habit-row-item{background:var(--s1);border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px;margin-bottom:6px;cursor:pointer;transition:all .15s}
+.habit-row-item.done{border-color:rgba(27,240,126,0.3);background:rgba(27,240,126,0.04)}
+.habit-row-item.warn{border-color:rgba(255,90,90,0.3);background:rgba(255,90,90,0.04)}
+.habit-row-item.expanded{border-color:var(--green)}
+.habit-main{display:flex;align-items:center;gap:12px}
+.h-icon{font-size:20px;flex-shrink:0}
+.h-info{flex:1}
+.h-name{font-size:14px;font-weight:600;color:var(--text);display:flex;align-items:center;gap:6px}
+.h-prog{font-size:11px;color:var(--text3);margin-top:2px}
+.h-auto{font-size:9px;font-weight:600;padding:2px 5px;border-radius:4px;background:rgba(74,158,240,0.15);color:var(--blue)}
+.h-lim{font-size:9px;font-weight:600;color:var(--red)}
+.h-ring{position:relative;width:36px;height:36px;flex-shrink:0}
+.h-ring svg{transform:rotate(-90deg)}
+.h-ring-num{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:10px;font-weight:700;color:var(--text)}
+.h-plus{width:28px;height:28px;border-radius:50%;background:var(--s2);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:14px;color:var(--text2);flex-shrink:0}
+.h-check{width:28px;height:28px;border-radius:50%;background:var(--green);display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;color:#000;font-weight:700}
+.habit-detail{padding-top:12px;margin-top:12px;border-top:1px solid var(--border)}
+.habit-days-row{display:flex;gap:4px;justify-content:center;margin-bottom:10px}
+.hd{width:28px;height:28px;border-radius:50%;background:var(--s2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:600;color:var(--text3)}
+.hd.done{background:var(--green);color:#000;border-color:var(--green)}
+.hd.today{border-color:var(--green);color:var(--green)}
+.habit-stats{display:flex;gap:6px;margin-bottom:10px}
+.hs{flex:1;background:var(--s2);border-radius:var(--rxs);padding:8px;text-align:center}
+.hs-num{font-size:18px;font-weight:800;color:var(--text);letter-spacing:-.5px}
+.hs-lbl{font-size:9px;color:var(--text3);font-weight:600;letter-spacing:.05em;text-transform:uppercase;margin-top:2px}
+.habit-action-btn{width:100%;padding:10px;border-radius:var(--rxs);background:var(--green);border:none;color:#000;font-size:13px;font-weight:700;cursor:pointer}
+.habit-action-btn.limit{background:var(--rbg);border:1px solid rgba(255,90,90,0.3);color:var(--red)}
+.add-habit-section{background:var(--s1);border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:12px;display:none}
+.add-habit-section.show{display:block}
+.add-habit-open-btn{width:100%;padding:10px;border-radius:var(--rsm);border:1px dashed var(--border2);background:transparent;color:var(--text3);font-size:13px;font-weight:500;cursor:pointer;margin-bottom:12px}
+.ah-field{margin-bottom:10px}
+.ah-label{font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--text3);margin-bottom:5px}
+.ah-input{width:100%;height:38px;border:1px solid var(--border2);border-radius:var(--rxs);background:var(--s3);color:var(--text);font-size:15px;padding:0 12px}
+.ah-type-row{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.ah-type{padding:8px;border-radius:var(--rxs);border:1px solid var(--border2);background:transparent;text-align:center;font-size:11px;font-weight:600;color:var(--text3);cursor:pointer}
+.ah-type.on{border-color:var(--green);background:var(--gbg);color:var(--green)}
+.ah-type.neg.on{border-color:var(--red);background:var(--rbg);color:var(--red)}
+.emoji-pick{display:flex;gap:5px;flex-wrap:wrap}
+.ep{width:32px;height:32px;border-radius:var(--rxs);background:var(--s2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer}
+.ep.on{border-color:var(--green);background:var(--gbg)}
+.goal-sel{display:flex;align-items:center;gap:10px}
+.goal-minus,.goal-plus{width:32px;height:32px;border-radius:var(--rxs);border:1px solid var(--border2);background:var(--s2);color:var(--text2);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.goal-plus{border-color:var(--green);color:var(--green)}
+.goal-num{flex:1;text-align:center;font-size:22px;font-weight:800;color:var(--text)}
+.ah-save{width:100%;padding:12px;border-radius:var(--rsm);background:var(--green);border:none;color:#000;font-size:14px;font-weight:700;cursor:pointer;margin-top:6px}
+.weekly-insights{background:var(--s1);border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:12px}
+.wi-title{font-size:12px;font-weight:700;color:var(--text2);letter-spacing:.06em;text-transform:uppercase;margin-bottom:10px}
+.wi-row{display:flex;gap:6px;margin-bottom:8px}
+.wi-box{flex:1;background:var(--s2);border-radius:var(--rsm);padding:10px}
+.wi-num{font-size:22px;font-weight:800;letter-spacing:-.5px}
+.wi-lbl{font-size:9px;color:var(--text3);font-weight:600;text-transform:uppercase;margin-top:2px}
+.wi-best{background:var(--gbg);border:1px solid rgba(27,240,126,0.15);border-radius:var(--rsm);padding:10px;margin-bottom:6px}
+.wi-warn{background:var(--abg);border:1px solid rgba(240,160,48,0.15);border-radius:var(--rsm);padding:10px}
+.wi-label{font-size:10px;font-weight:700;margin-bottom:3px}
+.wi-best .wi-label{color:var(--green)}
+.wi-warn .wi-label{color:var(--amber)}
+.wi-text{font-size:12px;color:var(--text)}
+.heatmap-row{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-bottom:4px}
+.hm-lbl{font-size:8px;color:var(--text3);text-align:center}
+.hm-cell{height:16px;border-radius:3px;background:var(--s3)}
 .recovery-card{background:var(--s1);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;margin-bottom:14px}
 .recovery-title{font-size:12px;font-weight:700;color:var(--text2);letter-spacing:.06em;text-transform:uppercase;margin-bottom:12px}
 .recovery-row{margin-bottom:10px}
@@ -493,8 +554,8 @@ const nk=k=>`tc_nutr_${k}`;
 const mk=id=>`tc_mob_w${cW}_${id}`;
 const z2k=id=>`tc_z2_w${cW}_${id}`;
 // Nutrition always uses TODAY
-const macroKey=()=>`tc_macro_w${getTodayWeek()}_d${getTodayDay()}`;
-const scanHistKey=()=>`tc_scan_w${getTodayWeek()}_d${getTodayDay()}`;
+const macroKey=()=>`tc_macro_w${cW}_d${cD}`;
+const scanHistKey=()=>`tc_scan_w${cW}_d${cD}`;
 const loadMacros=()=>ld(macroKey(),{kcal:0,protein:0,carbs:0,fat:0});
 const saveMacros=m=>sv(macroKey(),m);
 
@@ -629,7 +690,7 @@ function renderTraining(){
   if(ld(ek('cond'),false))exDone++;
   let h='';
   h+=recHTML;
-  if(exDone===exTotal){h+=`<div class="banner g"><div class="bi">🏆</div><p>Einheit abgeschlossen!</p></div>`;h+=renderRating();}
+  if(exDone===exTotal){h+=`<div class="banner g"><div class="bi">🏆</div><p>Einheit abgeschlossen!</p></div>`;}
   if(day.glute){h+=`<div class="glute-bar"><strong>Glute Activation vorher – 5 Min</strong>Clamshells mit Band 2×15 · Glute Bridge isometrisch 3×20 Sek · Donkey Kicks 2×12/Seite</div>`;}
   h+=`<div class="day-hdr"><div><div class="day-title">${day.title}</div><div class="day-meta">${ph.f} · ${ph.r}</div></div><div class="day-ct">${exDone}<span>/${exTotal}</span></div></div>`;
   h+=`<div class="lbl">Kraftblock</div>`;
@@ -642,6 +703,8 @@ function renderTraining(){
   });
   const condDone=ld(ek('cond'),false);
   h+=`<button class="cnd-btn${condDone?' on':''}" onclick="togCond()">${condDone?'✓ Einheit abgeschlossen':'Einheit als erledigt markieren'}</button>`;
+  // Post-workout rating - shows once conditioning/unit is marked complete
+  if(condDone){h+=renderRating();}
   if(day.zone2eve){
     const z2eve=["20 Min","22 Min","25 Min","20 Min"];
     h+=`<div class="z2-eve"><div class="z2-eve-title">Abends separat – Zone 2</div><div class="z2-eve-item">${z2eve[pi]} Spaziergang oder lockeres Laufen</div><div class="z2-eve-item">Puls 120–135 bpm – du kannst noch sprechen</div><div class="z2-eve-item">Nach der Arbeit, draußen – kein Gym nötig</div></div>`;
@@ -661,9 +724,9 @@ function renderTraining(){
 // ── RENDER NUTRITION ──────────────────────────────────────────────
 function renderNutr(){
   const targets=calcTargets();const macros=loadMacros();
-  const tw=getTodayWeek();const td=getTodayDay();
   const dayNames=["Montag","Dienstag","Mittwoch","Donnerstag","Freitag","Samstag","Sonntag"];
-  let h=`<div class="today-banner"><div><div class="today-banner-text">Heute tracken</div><div class="today-banner-sub">${dayNames[td]} · Woche ${tw+1}</div></div><div style="font-size:11px;color:var(--gdim)">Daten für heute</div></div>`;
+  const isToday2=cW===getTodayWeek()&&cD===getTodayDay();
+  let h=`<div class="today-banner"><div><div class="today-banner-text">${dayNames[cD]} · Woche ${cW+1}</div><div class="today-banner-sub">${isToday2?'Heutiger Tag':'Historische Daten'}</div></div><div style="font-size:11px;color:${isToday2?'var(--gdim)':'var(--text3)'}">${isToday2?'Heute ✓':'Ansicht'}</div></div>`;
   if(!targets){
     h+=`<div class="no-profile-box"><p>Trag deine Körperwerte im Profil ein – ich berechne deine personalisierten Tagesziele.</p><button class="go-profile-btn" onclick="setView('Profil')">Profil ausfüllen →</button></div>`;
   } else {
@@ -779,7 +842,7 @@ function renderFortschritt(){
     <div class="lbl" style="margin-top:20px">Progression</div><div class="prog-list">${pl}</div>
     <div class="lbl" style="margin-top:20px">Ziele nach 6 Wochen</div>
     <div class="gc"><div class="gr"><span class="gl">Gewicht</span><span class="gv">−10 bis −12 kg</span></div><div class="gr"><span class="gl">Unterbauch</span><span class="gv">Sichtbar flacher</span></div><div class="gr"><span class="gl">Haltung</span><span class="gv">Becken neutral, Schultern zurück</span></div><div class="gr"><span class="gl">Kraft</span><span class="gv">Deutlich stärker</span></div><div class="gr"><span class="gl">Energie</span><span class="gv">Stabil, kein Nachmittags-Tief</span></div><div class="gr"><span class="gl">Cortisol</span><span class="gv">Messbar reduziert</span></div></div>
-    <div style="height:20px"></div>`+renderMeasurements();
+    <div style="height:20px"></div>`+renderMeasurements()+renderHabits();
 }
 
 // ── SCANNER ───────────────────────────────────────────────────────
@@ -791,9 +854,8 @@ function saveScanHistory(h){sv(scanHistKey(),h);}
 
 function renderScan(){
   const key=getApiKey();const history=loadScanHistory();
-  const tw=getTodayWeek();const td=getTodayDay();
-  const dayNames=["Montag","Dienstag","Mittwoch","Donnerstag","Freitag","Samstag","Sonntag"];
-  let h=`<div class="today-banner"><div><div class="today-banner-text">Mahlzeiten heute</div><div class="today-banner-sub">${dayNames[td]} · Woche ${tw+1}</div></div></div>`;
+  const dayNames2=["Montag","Dienstag","Mittwoch","Donnerstag","Freitag","Samstag","Sonntag"];
+  let h=`<div class="today-banner"><div><div class="today-banner-text">Mahlzeiten – ${dayNames2[cD]}</div><div class="today-banner-sub">Woche ${cW+1}</div></div></div>`;
 
   if(!key){
     h+=`<div class="api-setup"><div class="api-setup-title">🔑 API Key einrichten</div><div class="api-setup-text">Einmalig deinen Anthropic API Key eingeben – für KI-Analyse und Etikett-Scanning. Ohne Key ist nur manuelle Eingabe möglich.</div><input class="api-inp" type="password" id="apiKeyInput" placeholder="sk-ant-api03-..."/><button class="api-save-btn" onclick="saveApiKeyNow()">Key speichern</button></div>`;
@@ -1130,29 +1192,234 @@ function renderSuppList(){
 // ── POST-WORKOUT RATING ───────────────────────────────────────────
 function ratingKey(){return `tc_rating_w${cW}_d${cD}`;}
 function getRating(){return ld(ratingKey(),null);}
+let ratingVals={energie:0,kraft:0,recovery:0};
+function setRating(field,val){
+  ratingVals[field]=val;
+  document.querySelectorAll('.rate-'+field).forEach((b,i)=>{
+    b.className='star-btn rate-'+field+(i+1<=val?' on':'');
+  });
+}
 function saveRatingNow(){
-  const e=parseInt(document.getElementById('rE')?.value||0);
-  const k=parseInt(document.getElementById('rK')?.value||0);
-  const r=parseInt(document.getElementById('rR')?.value||0);
-  if(!e||!k||!r){alert('Bitte alle drei bewerten.');return;}
-  sv(ratingKey(),{energie:e,kraft:k,recovery:r,ts:Date.now()});
-  const card=document.getElementById('ratingCard');
-  if(card){card.innerHTML=`<div style="font-size:13px;color:var(--green);font-weight:600">✓ Bewertung gespeichert · E:${e} K:${k} R:${r}</div>`;}
+  if(!ratingVals.energie||!ratingVals.kraft||!ratingVals.recovery){alert('Bitte alle drei bewerten.');return;}
+  sv(ratingKey(),{energie:ratingVals.energie,kraft:ratingVals.kraft,recovery:ratingVals.recovery,ts:Date.now()});
+  ratingVals={energie:0,kraft:0,recovery:0};
+  renderAll();
 }
 
 function renderRating(){
   const saved=getRating();
-  if(saved)return `<div class="rating-card"><div class="rating-title">Einheit bewertet</div><div style="font-size:13px;color:var(--text2)">Energie: ${saved.energie}/5 · Kraft: ${saved.kraft}/5 · Erholung: ${saved.recovery}/5</div></div>`;
-  const rows=[{id:'rE',label:'⚡ Energie'},{ id:'rK',label:'💪 Kraft'},{ id:'rR',label:'😴 Erholung danach'}];
-  let h=`<div class="rating-card" id="ratingCard"><div class="rating-title">Einheit bewerten</div>`;
+  if(saved)return `<div class="rating-card"><div class="rating-title">✓ Einheit bewertet</div><div style="font-size:13px;color:var(--text2)">⚡ Energie: ${saved.energie}/5 · 💪 Kraft: ${saved.kraft}/5 · 😴 Erholung: ${saved.recovery}/5</div></div>`;
+  const rows=[{id:'energie',label:'⚡ Energie während dem Training'},{id:'kraft',label:'💪 Kraft / Leistung'},{id:'recovery',label:'😴 Wie erholt fühlst du dich?'}];
+  let h=`<div class="rating-card" id="ratingCard"><div class="rating-title">Wie war das Training?</div>`;
   rows.forEach(row=>{
-    h+=`<div style="margin-bottom:10px"><div style="font-size:12px;color:var(--text2);margin-bottom:5px">${row.label}</div>
-    <div class="rating-stars"><input type="range" id="${row.id}" min="1" max="5" value="3" step="1" style="width:100%"/></div></div>`;
+    h+=`<div style="margin-bottom:12px"><div style="font-size:12px;color:var(--text2);margin-bottom:6px">${row.label}</div>
+    <div class="rating-stars">`;
+    for(let i=1;i<=5;i++){
+      h+=`<button class="star-btn rate-${row.id}" onclick="setRating('${row.id}',${i})">${i}</button>`;
+    }
+    h+=`</div></div>`;
   });
   h+=`<button class="rating-save-btn" onclick="saveRatingNow()">Bewertung speichern</button></div>`;
   return h;
 }
 // ── END NEW FUNCTIONS ──────────────────────────────────────────────
+
+
+// ── HABIT TRACKER ─────────────────────────────────────────────────
+const DEFAULT_HABITS=[
+  {id:'workout',name:'Workout',emoji:'🏋️',type:'positive',goal:4,auto:'training'},
+  {id:'zone2',name:'Zone 2 Lauf',emoji:'🏃',type:'positive',goal:1,auto:'zone2'},
+  {id:'mobility',name:'Mobility',emoji:'🧘',type:'positive',goal:1,auto:'mobility'},
+  {id:'walk',name:'Spaziergang',emoji:'🚶',type:'positive',goal:3,auto:null},
+  {id:'sweet',name:'Süßigkeiten',emoji:'🍬',type:'limit',goal:2,auto:null},
+];
+
+function getHabits(){return ld('tc_habits',DEFAULT_HABITS);}
+function saveHabits(h){sv('tc_habits',h);}
+function hEntryKey(id,w,d){return `tc_hentry_${id}_w${w}_d${d}`;}
+function getHabitCount(id,w){
+  const hab=getHabits().find(h=>h.id===id);
+  if(!hab)return 0;
+  if(hab.auto==='training')return[0,1,2,3].filter(d=>dayDone(w,d)).length;
+  if(hab.auto==='zone2')return dayDone(w,5)?1:0;
+  if(hab.auto==='mobility')return dayDone(w,6)?1:0;
+  let n=0;for(let d=0;d<7;d++){if(ld(hEntryKey(id,w,d),false))n++;}
+  return n;
+}
+function togHabitDay(id,w,d){
+  const cur=ld(hEntryKey(id,w,d),false);
+  sv(hEntryKey(id,w,d),!cur);
+  renderFortschritt();
+}
+function getHabitStreak(id){
+  let streak=0;
+  for(let w=0;w<6;w++){
+    const h=getHabits().find(x=>x.id===id);
+    if(!h)break;
+    const cnt=getHabitCount(id,w);
+    if(cnt>=h.goal)streak++;
+    else break;
+  }
+  return streak;
+}
+function getHabitSuccessRate(id){
+  let good=0,total=0;
+  for(let w=0;w<6;w++){
+    const h=getHabits().find(x=>x.id===id);
+    if(!h)continue;
+    const cnt=getHabitCount(id,w);
+    if(cnt>0||w<=getTodayWeek()){total++;if(cnt>=h.goal)good++;}
+  }
+  return total>0?Math.round(good/total*100):0;
+}
+
+let expandedHabit=null;
+let addHabitOpen=false;
+let newHabit={name:'',emoji:'🏃',type:'positive',goal:3};
+const EMOJIS=['🚶','🏃','🧘','🏋️','🍬','💧','📚','😴','🥗','☀️','🧠','❤️'];
+
+function toggleHabit(id){expandedHabit=expandedHabit===id?null:id;renderFortschritt();}
+
+function renderHabitRing(cnt,goal,type,size=36){
+  const r=size/2-4;const circ=2*Math.PI*r;
+  const pct=goal>0?Math.min(cnt/goal,1):0;
+  const offset=circ*(1-pct);
+  const color=type==='limit'?(cnt>=goal?'var(--red)':'var(--amber)'):cnt>=goal?'var(--green)':'#4A9EF0';
+  return `<div class="h-ring" style="width:${size}px;height:${size}px">
+    <svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
+      <circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="var(--s3)" stroke-width="4"/>
+      <circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="${color}" stroke-width="4"
+        stroke-dasharray="${circ.toFixed(1)}" stroke-dashoffset="${offset.toFixed(1)}" stroke-linecap="round"/>
+    </svg>
+    <div class="h-ring-num" style="color:${color}">${cnt}</div>
+  </div>`;
+}
+
+function renderHabits(){
+  const habits=getHabits();
+  const w=cW;
+  let h=`<div class="lbl">Habits – Woche ${w+1}</div>`;
+
+  habits.forEach(hab=>{
+    const cnt=getHabitCount(hab.id,w);
+    const done=hab.type==='positive'?cnt>=hab.goal:false;
+    const warn=hab.type==='limit'&&cnt>=hab.goal;
+    const isExp=expandedHabit===hab.id;
+    h+=`<div class="habit-row-item${done?' done':''}${warn?' warn':''}${isExp?' expanded':''}" onclick="toggleHabit('${hab.id}')">
+      <div class="habit-main">
+        <div class="h-icon">${hab.emoji}</div>
+        <div class="h-info">
+          <div class="h-name">${hab.name}${hab.auto?`<span class="h-auto">Auto</span>`:''}${hab.type==='limit'?`<span class="h-lim">LIMIT</span>`:''}</div>
+          <div class="h-prog">${cnt} / ${hab.goal}${hab.type==='limit'?' max':''} diese Woche${done&&hab.type==='positive'?' ✓':warn?' – Limit erreicht!':''}</div>
+        </div>
+        ${renderHabitRing(cnt,hab.goal,hab.type)}
+        ${!hab.auto&&!done?`<button class="h-plus" onclick="event.stopPropagation();togHabitDay('${hab.id}',${w},${getTodayDay()})">+</button>`:''}
+        ${done?`<div class="h-check">✓</div>`:''}
+      </div>`;
+
+    if(isExp){
+      const streak=getHabitStreak(hab.id);
+      const rate=getHabitSuccessRate(hab.id);
+      h+=`<div class="habit-detail">
+        <div style="font-size:10px;font-weight:700;color:var(--text3);letter-spacing:.06em;text-transform:uppercase;text-align:center;margin-bottom:6px">Diese Woche</div>
+        <div class="habit-days-row">`;
+      const dnames=['Mo','Di','Mi','Do','Fr','Sa','So'];
+      for(let d=0;d<7;d++){
+        let dc='hd';
+        const isT=w===getTodayWeek()&&d===getTodayDay();
+        let isDone=false;
+        if(hab.auto==='training')isDone=d<4&&dayDone(w,d);
+        else if(hab.auto==='zone2')isDone=d===5&&dayDone(w,5);
+        else if(hab.auto==='mobility')isDone=d===6&&dayDone(w,6);
+        else isDone=ld(hEntryKey(hab.id,w,d),false);
+        if(isDone)dc+=' done';
+        else if(isT)dc+=' today';
+        h+=`<div class="${dc}" onclick="event.stopPropagation();${!hab.auto?`togHabitDay('${hab.id}',${w},${d})`:''}">`;
+        h+=dnames[d];h+=`</div>`;
+      }
+      h+=`</div>
+        <div class="habit-stats">
+          <div class="hs"><div class="hs-num" style="color:var(--amber)">${streak}</div><div class="hs-lbl">Streak Wochen</div></div>
+          <div class="hs"><div class="hs-num" style="color:var(--green)">${rate}%</div><div class="hs-lbl">Erfolgsrate</div></div>
+          <div class="hs"><div class="hs-num">${Array.from({length:6},(_,i)=>getHabitCount(hab.id,i)).reduce((a,b)=>a+b,0)}</div><div class="hs-lbl">Gesamt</div></div>
+        </div>
+        ${!hab.auto?`<button class="habit-action-btn${hab.type==='limit'?' limit':''}" onclick="event.stopPropagation();togHabitDay('${hab.id}',${w},${getTodayDay()});expandedHabit=null">
+          ${ld(hEntryKey(hab.id,w,getTodayDay()),false)?'↩ Heute rückgängig':'+ Heute abhaken'}</button>`:''}
+        <button onclick="event.stopPropagation();deleteHabit('${hab.id}')" style="width:100%;padding:7px;border-radius:var(--rxs);border:none;background:transparent;color:var(--text3);font-size:11px;cursor:pointer;margin-top:6px">Habit löschen</button>
+      </div>`;
+    }
+    h+=`</div>`;
+  });
+
+  // Add habit button
+  h+=`<button class="add-habit-open-btn" onclick="toggleAddHabit()">+ Neuen Habit hinzufügen</button>`;
+
+  // Add habit form
+  h+=`<div class="add-habit-section${addHabitOpen?' show':''}" id="addHabitForm">
+    <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:12px">Neuer Habit</div>
+    <div class="ah-field"><div class="ah-label">Name</div><input class="ah-input" type="text" id="ahName" placeholder="z.B. Spaziergang" value="${newHabit.name}" oninput="newHabit.name=this.value"/></div>
+    <div class="ah-field"><div class="ah-label">Emoji</div><div class="emoji-pick">`;
+  EMOJIS.forEach(e=>{h+=`<div class="ep${newHabit.emoji===e?' on':''}" onclick="newHabit.emoji='${e}';renderFortschritt()">${e}</div>`;});
+  h+=`</div></div>
+    <div class="ah-field"><div class="ah-label">Typ</div>
+      <div class="ah-type-row">
+        <div class="ah-type${newHabit.type==='positive'?' on':''}" onclick="newHabit.type='positive';renderFortschritt()">✅ Positiv<br><span style="font-size:9px;opacity:.7">Mehr = besser</span></div>
+        <div class="ah-type neg${newHabit.type==='limit'?' on':''}" onclick="newHabit.type='limit';renderFortschritt()">🚫 Limit<br><span style="font-size:9px;opacity:.7">Max nicht überschreiten</span></div>
+      </div>
+    </div>
+    <div class="ah-field"><div class="ah-label">Wöchentliches Ziel</div>
+      <div class="goal-sel">
+        <button class="goal-minus" onclick="if(newHabit.goal>1)newHabit.goal--;renderFortschritt()">−</button>
+        <div class="goal-num">${newHabit.goal}</div>
+        <button class="goal-plus" onclick="if(newHabit.goal<7)newHabit.goal++;renderFortschritt()">+</button>
+      </div>
+      <div style="font-size:10px;color:var(--text3);text-align:center;margin-top:4px">${newHabit.goal}× pro Woche</div>
+    </div>
+    <button class="ah-save" onclick="saveNewHabit()">Habit speichern</button>
+  </div>`;
+
+  // Weekly insights
+  const totalHabits=habits.length;
+  const completedHabits=habits.filter(h=>getHabitCount(h.id,w)>=h.goal&&h.type==='positive').length;
+  const bestHabit=habits.filter(h=>h.type==='positive').sort((a,b)=>getHabitCount(b.id,w)/b.goal-getHabitCount(a.id,w)/a.goal)[0];
+  const needsWork=habits.filter(h=>h.type==='positive').sort((a,b)=>getHabitCount(a.id,w)/a.goal-getHabitCount(b.id,w)/b.goal)[0];
+  const limitHit=habits.filter(h=>h.type==='limit'&&getHabitCount(h.id,w)>=h.goal);
+
+  h+=`<div class="weekly-insights"><div class="wi-title">Wochenbilanz</div>
+    <div class="wi-row">
+      <div class="wi-box"><div class="wi-num" style="color:var(--green)">${completedHabits}/${habits.filter(x=>x.type==='positive').length}</div><div class="wi-lbl">Habits erfüllt</div></div>
+      <div class="wi-box"><div class="wi-num" style="color:var(--amber)">${habits.filter(h=>h.id==='workout'||h.auto==='training').length>0?getHabitCount('workout',w):0}/4</div><div class="wi-lbl">Workouts</div></div>
+    </div>
+    ${bestHabit&&getHabitCount(bestHabit.id,w)>0?`<div class="wi-best"><div class="wi-label">🏆 Bester Habit</div><div class="wi-text">${bestHabit.emoji} ${bestHabit.name} – ${getHabitCount(bestHabit.id,w)}/${bestHabit.goal}</div></div>`:''}
+    ${needsWork&&getHabitCount(needsWork.id,w)<needsWork.goal?`<div class="wi-warn"><div class="wi-label">⚠️ Nächste Woche verbessern</div><div class="wi-text">${needsWork.emoji} ${needsWork.name} – nur ${getHabitCount(needsWork.id,w)}/${needsWork.goal}</div></div>`:''}
+    ${limitHit.length>0?`<div style="background:var(--rbg);border:1px solid rgba(255,90,90,0.15);border-radius:var(--rsm);padding:10px;margin-top:6px"><div style="font-size:10px;font-weight:700;color:var(--red);margin-bottom:3px">🚫 Limit erreicht</div><div style="font-size:12px;color:var(--text)">${limitHit.map(h=>h.emoji+' '+h.name).join(', ')}</div></div>`:''}
+  </div>`;
+
+  return h;
+}
+
+function toggleAddHabit(){addHabitOpen=!addHabitOpen;renderFortschritt();}
+
+function saveNewHabit(){
+  const name=document.getElementById('ahName')?.value.trim()||newHabit.name;
+  if(!name){alert('Bitte Namen eingeben.');return;}
+  const habits=getHabits();
+  const id='custom_'+Date.now();
+  habits.push({id,name,emoji:newHabit.emoji,type:newHabit.type,goal:newHabit.goal,auto:null});
+  saveHabits(habits);
+  newHabit={name:'',emoji:'🏃',type:'positive',goal:3};
+  addHabitOpen=false;
+  renderFortschritt();
+}
+
+function deleteHabit(id){
+  if(!confirm('Habit löschen?'))return;
+  const habits=getHabits().filter(h=>h.id!==id);
+  saveHabits(habits);
+  expandedHabit=null;
+  renderFortschritt();
+}
+// ── END HABIT TRACKER ─────────────────────────────────────────────
 
 function renderAll(){
   updateHeader();renderTraining();
