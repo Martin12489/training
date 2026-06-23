@@ -231,6 +231,11 @@ html,body{height:100%;background:#0E0E0C;font-family:-apple-system,BlinkMacSyste
 .navi.active .ni,.navi.active .nl{color:var(--green)}
 .view{display:none}.view.show{display:block}
 #fileInput{display:none}
+.rot-warning{background:rgba(255,90,90,0.08);border:1px solid rgba(255,90,90,0.3);border-radius:var(--radius);padding:16px;margin-bottom:14px;display:flex;gap:12px;align-items:flex-start}
+.rot-warning-icon{font-size:28px;flex-shrink:0}
+.rot-warning-title{font-size:15px;font-weight:700;color:var(--red);margin-bottom:6px}
+.rot-warning-text{font-size:13px;color:var(--text2);line-height:1.6}
+.gelb-hint{background:rgba(240,160,48,0.08);border:1px solid rgba(240,160,48,0.25);border-radius:var(--rsm);padding:11px 14px;margin-bottom:12px;font-size:13px;color:var(--text2);line-height:1.5}
 .habit-section{margin-bottom:16px}
 .habit-row-item{background:var(--s1);border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px;margin-bottom:6px;cursor:pointer;transition:all .15s}
 .habit-row-item.done{border-color:rgba(27,240,126,0.3);background:rgba(27,240,126,0.04)}
@@ -700,14 +705,37 @@ function renderTraining(){
   if(ld(ek('cond'),false))exDone++;
   let h='';
   h+=recHTML;
+  // Ampel-Status für Trainingsanpassung auslesen
+  const recData=getRecovery();
+  const ampelStatus=recData?calcAmpel(recData).cls:null;
   if(exDone===exTotal){h+=`<div class="banner g"><div class="bi">🏆</div><p>Einheit abgeschlossen!</p></div>`;}
+  // ROT: deutlicher Hinweis statt normalem Training
+  if(ampelStatus==='r'){
+    h+=`<div class="rot-warning"><div class="rot-warning-icon">🛑</div><div><div class="rot-warning-title">Heute besser pausieren</div><div class="rot-warning-text">Dein Körper signalisiert zu hohe Belastung. Bei erhöhtem Cortisol ist intensives Training jetzt kontraproduktiv. Empfehlung: 20–30 Min lockeres Zone 2 oder kompletter Ruhetag. Du kannst trotzdem trainieren – aber mit deutlich reduzierter Last (RPE 5–6).</div></div></div>`;
+  }
   if(day.glute){h+=`<div class="glute-bar"><strong>Glute Activation vorher – 5 Min</strong>Clamshells mit Band 2×15 · Glute Bridge isometrisch 3×20 Sek · Donkey Kicks 2×12/Seite</div>`;}
-  h+=`<div class="day-hdr"><div><div class="day-title">${day.title}</div><div class="day-meta">${ph.f} · ${ph.r}</div></div><div class="day-ct">${exDone}<span>/${exTotal}</span></div></div>`;
+  // Angepasste Phase-Anzeige bei Gelb
+  let rpeDisplay=ph.r;
+  if(ampelStatus==='y')rpeDisplay=ph.r+' → heute RPE -1';
+  else if(ampelStatus==='r')rpeDisplay='RPE 5–6 (reduziert)';
+  h+=`<div class="day-hdr"><div><div class="day-title">${day.title}</div><div class="day-meta">${ph.f} · ${rpeDisplay}</div></div><div class="day-ct">${exDone}<span>/${exTotal}</span></div></div>`;
+  // GELB: Hinweis-Banner
+  if(ampelStatus==='y'){
+    h+=`<div class="gelb-hint"><span style="font-weight:600;color:var(--amber)">⚠️ Reduziert trainieren:</span> Heute RPE -1 bei allen Übungen und 1 Satz weniger. Qualität vor Last.</div>`;
+  }
   h+=`<div class="lbl">Kraftblock</div>`;
   day.ex.forEach(ex=>{
     const done=ld(ek('ex_'+ex.id),false);const wt=ld(ek('w_'+ex.id),'');
-    const sets=ex.prog[pi]||ex.prog[ex.prog.length-1];
-    h+=`<div class="ex-card${done?' dn':''}"><div class="ex-row"><button class="chk${done?' on':''}" onclick="togEx('${ex.id}')">${done?CHK:''}</button><span class="ex-name">${ex.n}</span><span class="ex-s">${sets}</span></div>`;
+    let sets=ex.prog[pi]||ex.prog[ex.prog.length-1];
+    // Bei Gelb: einen Satz reduzieren (visueller Hinweis)
+    let setsDisplay=sets;
+    if(ampelStatus==='y'){
+      const m=sets.match(/^(\d+)×(.+)$/);
+      if(m){const reduced=Math.max(parseInt(m[1])-1,1);setsDisplay=`${reduced}×${m[2]} <span style="color:var(--text3);text-decoration:line-through;font-size:10px">${sets}</span>`;}
+    } else if(ampelStatus==='r'){
+      setsDisplay=`${sets} <span style="color:var(--red);font-size:10px">· leicht</span>`;
+    }
+    h+=`<div class="ex-card${done?' dn':''}"><div class="ex-row"><button class="chk${done?' on':''}" onclick="togEx('${ex.id}')">${done?CHK:''}</button><span class="ex-name">${ex.n}</span><span class="ex-s">${setsDisplay}</span></div>`;
     if(ex.w)h+=`<div class="w-row"><label>Gewicht</label><input class="w-inp" type="number" value="${wt}" placeholder="–" oninput="saveW('${ex.id}',this.value)"/><span style="font-size:12px;color:var(--text3)">kg</span></div>`;
     h+=`<div class="ex-note">${ex.note}<span class="pause-chip"> · Pause: ${ex.pause}</span></div></div>`;
   });
@@ -810,8 +838,10 @@ function renderProfil(){
   </div>
   <div class="lbl" style="margin-top:20px">Plan verwalten</div>
   <div class="profile-card">
-    <div style="font-size:13px;color:var(--text2);margin-bottom:12px;line-height:1.6">Plan neu starten löscht alle Trainingsdaten und setzt den Start auf den nächsten Montag. Profil und Einstellungen bleiben erhalten.</div>
+    <div style="font-size:13px;color:var(--text2);margin-bottom:12px;line-height:1.6">Plan neu starten löscht alle Trainingsdaten lokal und in GitHub, und setzt den Start auf den nächsten Montag. Profil und Einstellungen bleiben erhalten.</div>
     <button onclick="resetPlan()" style="width:100%;padding:12px;border-radius:var(--rsm);border:1px solid rgba(255,90,90,0.3);background:var(--rbg);color:var(--red);font-size:13px;font-weight:600;cursor:pointer">Plan neu starten</button>
+    <button onclick="forceCleanGithub()" style="width:100%;padding:12px;border-radius:var(--rsm);border:1px solid var(--border2);background:transparent;color:var(--text2);font-size:13px;font-weight:600;cursor:pointer;margin-top:8px">GitHub mit aktuellem Stand überschreiben</button>
+    <div style="font-size:11px;color:var(--text3);margin-top:8px;line-height:1.5">Falls alte Testdaten aus GitHub zurückkommen: aktuellen lokalen Stand nach GitHub pushen und alte data.json ersetzen.</div>
   </div>
   <div style="height:20px"></div>`;
   document.getElementById('vProfil').innerHTML=h;
@@ -828,7 +858,20 @@ function resetPlan(){
   }
   cW=0;cD=getTodayDay();
   expandedHabit=null;addHabitOpen=false;
-  startPlan();
+  // Startdatum setzen
+  const today=new Date();const day=today.getDay();
+  const dUM=day===1?0:(8-day)%7;
+  const nextMon=new Date(today);
+  nextMon.setDate(today.getDate()+dUM);
+  nextMon.setHours(0,0,0,0);
+  localStorage.setItem('tc_start_date',JSON.stringify(nextMon.toISOString()));
+  cW=getTodayWeek();cD=getTodayDay();
+  // Bereinigten Stand SOFORT zu GitHub pushen (überschreibt alte data.json)
+  if(githubConfigured()){
+    saveToGithub().then(()=>{renderAll();}).catch(()=>{renderAll();});
+  } else {
+    renderAll();
+  }
 }
 
 // ── RENDER FORTSCHRITT ────────────────────────────────────────────
@@ -1014,6 +1057,17 @@ function scheduleSave(){if(!githubConfigured())return;clearTimeout(syncTimeout);
 function setSyncStatus(status,msg){syncStatus=status;const el=document.getElementById('syncIndicator');if(!el)return;if(!githubConfigured()){el.style.display='none';return;}el.style.display='flex';const cfg={idle:{icon:'☁️',label:'GitHub',color:'var(--text3)'},pending:{icon:'⏳',label:'...',color:'var(--amber)'},syncing:{icon:'⏳',label:'Syncing',color:'var(--amber)'},saved:{icon:'✓',label:'Gespeichert',color:'var(--green)'},error:{icon:'⚠️',label:msg||'Fehler',color:'var(--red)'}};const s=cfg[status]||cfg.idle;el.innerHTML=`<span style="color:${s.color};font-size:11px;font-weight:600">${s.icon} ${s.label}</span>`;}
 function saveGithubConfig(){const token=document.getElementById('ghToken').value.trim();const owner=document.getElementById('ghOwner').value.trim();const repo=document.getElementById('ghRepo').value.trim();localStorage.setItem('tc_github',JSON.stringify({token,owner,repo}));githubSHA=null;renderProfil();if(token&&owner&&repo)loadFromGithub();}
 function syncNow(){saveToGithub().then(()=>{if(cV==='Profil')renderProfil();});}
+
+function forceCleanGithub(){
+  if(!githubConfigured()){alert('Bitte zuerst GitHub-Einstellungen speichern.');return;}
+  if(!confirm('Aktuellen lokalen Stand nach GitHub pushen? Die data.json in GitHub wird mit deinen jetzigen Daten überschrieben – alte Testdaten verschwinden.'))return;
+  saveToGithub().then(()=>{
+    alert('GitHub erfolgreich überschrieben. Alte Daten wurden ersetzt.');
+    if(cV==='Profil')renderProfil();
+  }).catch(e=>{
+    alert('Fehler: '+e.message);
+  });
+}
 
 // ── ACTIONS ───────────────────────────────────────────────────────
 function togEx(id){sv(ek('ex_'+id),!ld(ek('ex_'+id),false));renderAll();}
