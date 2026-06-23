@@ -550,7 +550,7 @@ function getNextMonday(){
 
 // ── KEYS ─────────────────────────────────────────────────────────
 const ek=k=>`tc_w${cW}_d${cD}_${k}`;
-const nk=k=>`tc_nutr_${k}`;
+const nk=k=>`tc_nutr_w${cW}_d${cD}_${k}`;
 const mk=id=>`tc_mob_w${cW}_${id}`;
 const z2k=id=>`tc_z2_w${cW}_${id}`;
 // Nutrition always uses TODAY
@@ -563,10 +563,20 @@ const CHK=`<svg viewBox="0 0 14 14" fill="none"><polyline points="2,7 6,11 12,3"
 const CHK2=`<svg viewBox="0 0 13 13" fill="none"><polyline points="2,6.5 5.5,10 11,3" stroke="black" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 
 // ── NAVIGATION ───────────────────────────────────────────────────
-function chWeek(d){cW=Math.max(0,Math.min(5,cW+d));renderAll();}
-function setDay(d){cD=d;renderAll();}
+function chWeek(d){cW=Math.max(0,Math.min(5,cW+d));resetTransientState();renderAll();}
+function setDay(d){cD=d;resetTransientState();renderAll();}
+function resetTransientState(){
+  // Halb ausgefüllte Eingaben zurücksetzen beim Tag/Wochenwechsel
+  ratingVals={energie:0,kraft:0,recovery:0};
+  recVals={schlaf:0,stress:0,energie:0};
+  expandedHabit=null;
+  addHabitOpen=false;
+  if(typeof breathTimer!=='undefined'&&breathTimer){stopBreathing();}
+}
 function setView(v){
   cV=v;
+  // Atemübung stoppen wenn man den Tab verlässt
+  if(typeof breathTimer!=='undefined'&&breathTimer){stopBreathing();}
   ['Training','Ernährung','Fortschritt','Profil','Scan'].forEach(n=>{
     document.getElementById('v'+n).classList.toggle('show',n===v);
     document.getElementById('n'+n).classList.toggle('active',n===v);
@@ -808,12 +818,16 @@ function renderProfil(){
 }
 
 function resetPlan(){
-  if(!confirm('Alle Trainingsdaten löschen und neu starten?'))return;
+  if(!confirm('Alle Trainingsdaten löschen und neu starten? Profil, Habits-Definitionen und GitHub-Einstellungen bleiben erhalten.'))return;
   for(let k of Object.keys(localStorage)){
-    if(k.startsWith('tc_w')||k.startsWith('tc_macro')||k.startsWith('tc_scan')||k.startsWith('tc_nutr')||k==='tc_start_date'||k==='tc_last_sync')
+    if(k.startsWith('tc_w')||k.startsWith('tc_macro')||k.startsWith('tc_scan')||k.startsWith('tc_nutr')||
+       k.startsWith('tc_rec_')||k.startsWith('tc_rating')||k.startsWith('tc_supp')||
+       k.startsWith('tc_hentry')||k.startsWith('tc_meas')||k.startsWith('tc_z2_')||k.startsWith('tc_mob_')||
+       k==='tc_start_date'||k==='tc_last_sync')
       localStorage.removeItem(k);
   }
   cW=0;cD=getTodayDay();
+  expandedHabit=null;addHabitOpen=false;
   startPlan();
 }
 
@@ -1017,7 +1031,7 @@ function saveProfileNow(){profileChanged();renderProfil();renderNutr();const btn
 
 // ── RECOVERY CHECK ────────────────────────────────────────────────
 function getTodayStr(){const d=new Date();return `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`;}
-function recKey(){return `tc_rec_${getTodayStr()}`;}
+function recKey(){return `tc_rec_w${cW}_d${cD}`;}
 function getRecovery(){return ld(recKey(),null);}
 function saveRecovery(schlaf,stress,energie){sv(recKey(),{schlaf,stress,energie,ts:Date.now()});}
 
@@ -1030,24 +1044,35 @@ function calcAmpel(s){
 }
 
 function renderRecoveryCheck(){
+  // Nur an echten Trainingstagen Mo-Do (cD 0-3)
+  if(cD>3)return '';
   const rec=getRecovery();
   if(rec){
     const a=calcAmpel(rec);
-    return `<div class="ampel ${a.cls}" style="margin-bottom:14px"><div class="ampel-dot"></div><div><div class="ampel-text">${a.label}</div><div class="ampel-sub">${a.sub}</div></div></div>`;
+    return `<div class="ampel ${a.cls}" style="margin-bottom:14px"><div class="ampel-dot"></div><div style="flex:1"><div class="ampel-text">${a.label}</div><div class="ampel-sub">${a.sub}</div></div><button onclick="resetRecCheck()" style="background:none;border:none;color:var(--text3);font-size:11px;cursor:pointer;padding:4px">ändern</button></div>`;
   }
   const metrics=[
     {id:'schlaf',label:'😴 Schlaf',desc:'Wie gut hast du heute Nacht geschlafen?',colors:['on-r','on-r','on-a','on-g','on-g']},
     {id:'stress',label:'🏋️ Körpergefühl',desc:'Wie leicht oder schwer fühlt sich dein Körper an?',colors:['on-r','on-r','on-a','on-g','on-g']},
     {id:'energie',label:'⚡ Mentale Frische',desc:'Wie klar und fokussiert ist dein Kopf?',colors:['on-r','on-r','on-a','on-g','on-g']},
   ];
-  let h=`<div class="recovery-card"><div class="recovery-title">Check-in vor dem Training</div><div style="font-size:11px;color:var(--text3);margin-bottom:12px;line-height:1.6">Ausfüllen direkt bevor du trainierst – in der Umkleide oder auf dem Weg.</div>`;
+  const isT=cW===getTodayWeek()&&cD===getTodayDay();
+  let h=`<div class="recovery-card"><div class="recovery-title">Check-in vor dem Training${isT?'':' · '+['Mo','Di','Mi','Do'][cD]+' W'+(cW+1)}</div><div style="font-size:11px;color:var(--text3);margin-bottom:12px;line-height:1.6">${isT?'Ausfüllen direkt bevor du trainierst – in der Umkleide oder auf dem Weg.':'Vorausgefüllt für diesen Trainingstag.'}</div>`;
   metrics.forEach(m=>{
-    h+=`<div class="recovery-row"><div class="recovery-label">${m.label}</div><div class="recovery-btns" id="rec_${m.id}">`;
-    for(let i=1;i<=5;i++){h+=`<button class="rec-btn" onclick="setRec('${m.id}',${i},this,'${m.colors[i-1]}')"> ${i}</button>`;}
+    h+=`<div class="recovery-row"><div class="recovery-label">${m.label}</div><div style="font-size:11px;color:var(--text3);margin-bottom:5px">${m.desc}</div><div class="recovery-btns" id="rec_${m.id}">`;
+    const lbls=['Sehr schlecht','Schlecht','Mittel','Gut','Sehr gut'];
+    for(let i=1;i<=5;i++){h+=`<button class="rec-btn" onclick="setRec('${m.id}',${i},this,'${m.colors[i-1]}')" title="${lbls[i-1]}">${i}</button>`;}
     h+=`</div></div>`;
   });
   h+=`<button class="rec-save-btn" onclick="saveRecCheck()">Check-in speichern</button></div>`;
   return h;
+}
+
+function resetRecCheck(){
+  localStorage.removeItem(recKey());
+  scheduleSave();
+  recVals={schlaf:0,stress:0,energie:0};
+  renderAll();
 }
 
 let recVals={schlaf:0,stress:0,energie:0};
@@ -1175,7 +1200,7 @@ const SUPPS=[
   {id:'prot1',name:'Erbsenprotein Shake 1',dose:'30g Protein',time:'Post-Workout (nach Training)',icon:'💪'},
   {id:'prot2',name:'Erbsenprotein Shake 2',dose:'30g Protein',time:'Mittags oder Abends',icon:'💪'},
 ];
-function suppKey(id){return `tc_supp_${getTodayStr()}_${id}`;}
+function suppKey(id){return `tc_supp_w${cW}_d${cD}_${id}`;}
 function getSuppDone(id){return ld(suppKey(id),false);}
 function togSupp(id){sv(suppKey(id),!getSuppDone(id));if(document.getElementById('vSuppList'))renderSuppList();}
 
