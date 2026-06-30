@@ -840,6 +840,14 @@ function renderProfil(){
   </div>
   <div class="lbl" style="margin-top:20px">Plan verwalten</div>
   <div class="profile-card">
+    <div class="profile-field" style="margin-bottom:0">
+      <div class="field-label">Trainingsstart (Montag Woche 1)</div>
+      <input class="field-input" type="date" id="startDateInput" value="${(()=>{const sd=ld('tc_start_date',null);return sd?new Date(sd).toISOString().slice(0,10):'';})()}" onchange="fixStartDate()"/>
+      <div style="font-size:11px;color:var(--text3);margin-top:6px;line-height:1.5">Aktuell berechnet: Woche ${getTodayWeek()+1}, ${['Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag','Sonntag'][getTodayDay()]}. Falls falsch: hier den echten Montag deiner Woche 1 eintragen – wird automatisch auf den nächsten Montag davor korrigiert.</div>
+    </div>
+  </div>
+  <div class="lbl" style="margin-top:16px">Daten zurücksetzen</div>
+  <div class="profile-card">
     <div style="font-size:13px;color:var(--text2);margin-bottom:12px;line-height:1.6">Plan neu starten löscht alle Trainingsdaten lokal und in GitHub, und setzt den Start auf den nächsten Montag. Profil und Einstellungen bleiben erhalten.</div>
     <button onclick="resetPlan()" style="width:100%;padding:12px;border-radius:var(--rsm);border:1px solid rgba(255,90,90,0.3);background:var(--rbg);color:var(--red);font-size:13px;font-weight:600;cursor:pointer">Plan neu starten</button>
     <button onclick="forceCleanGithub()" style="width:100%;padding:12px;border-radius:var(--rsm);border:1px solid var(--border2);background:transparent;color:var(--text2);font-size:13px;font-weight:600;cursor:pointer;margin-top:8px">GitHub mit aktuellem Stand überschreiben</button>
@@ -847,6 +855,20 @@ function renderProfil(){
   </div>
   <div style="height:20px"></div>`;
   document.getElementById('vProfil').innerHTML=h;
+}
+
+function fixStartDate(){
+  const val=document.getElementById('startDateInput')?.value;
+  if(!val)return;
+  const picked=new Date(val+'T00:00:00');
+  // Auf den Montag dieser Woche snappen (falls kein Montag gewählt wurde)
+  const day=picked.getDay(); // 0=So,1=Mo...
+  const offsetToMonday=day===0?-6:1-day;
+  picked.setDate(picked.getDate()+offsetToMonday);
+  picked.setHours(0,0,0,0);
+  sv('tc_start_date',picked.toISOString());
+  cW=getTodayWeek();cD=getTodayDay();
+  renderAll();
 }
 
 function resetPlan(){
