@@ -26,10 +26,11 @@ html,body{height:100%;background:#0E0E0C;font-family:-apple-system,BlinkMacSyste
 .header{background:var(--bg);border-bottom:1px solid var(--border);padding:env(safe-area-inset-top,20px) 20px 0;position:sticky;top:0;z-index:50}
 .header-top{display:flex;align-items:center;justify-content:space-between;padding:14px 0 12px}
 .app-title{font-size:11px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--text3)}
-.header-right{display:flex;align-items:center;gap:8px}
-.today-btn{font-size:11px;font-weight:600;padding:4px 10px;border-radius:20px;border:1px solid var(--border2);background:transparent;color:var(--text2);cursor:pointer}
+.header-right{display:flex;align-items:center;gap:6px;min-width:0;flex-shrink:1}
+.today-btn{font-size:11px;font-weight:600;padding:4px 10px;border-radius:20px;border:1px solid var(--border2);background:transparent;color:var(--text2);cursor:pointer;flex-shrink:0}
 .today-btn.active{background:var(--gbg);border-color:rgba(27,240,126,0.3);color:var(--green)}
-.week-pill{background:var(--gbg);color:var(--green);font-size:12px;font-weight:700;padding:5px 12px;border-radius:20px;border:1px solid rgba(27,240,126,0.2)}
+.week-pill{background:var(--gbg);color:var(--green);font-size:12px;font-weight:700;padding:5px 12px;border-radius:20px;border:1px solid rgba(27,240,126,0.2);flex-shrink:0;white-space:nowrap}
+#syncIndicator{max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex-shrink:1;min-width:0}
 .week-row{display:flex;align-items:center;justify-content:space-between;padding-bottom:12px}
 .week-nav{display:flex;align-items:center;gap:8px}
 .nav-btn{width:32px;height:32px;border-radius:var(--rxs);border:1px solid var(--border2);background:var(--s2);cursor:pointer;color:var(--text2);font-size:18px;display:flex;align-items:center;justify-content:center}
@@ -426,7 +427,7 @@ html,body{height:100%;background:#0E0E0C;font-family:-apple-system,BlinkMacSyste
     <button class="navi" id="nProfil" onclick="setView('Profil')"><div class="ni">👤</div><div class="nl">Profil</div></button>
     <button class="navi" id="nScan" onclick="setView('Scan')"><div class="ni">🍽️</div><div class="nl">Mahlzeit</div></button>
   </nav>
-  <input type="file" id="fileInput" accept="image/*" capture="environment" onchange="handleFileSelect(event)"/>
+  <input type="file" id="fileInput" accept="image/*" onchange="handleFileSelect(event)"/>
 </div>
 <script>
 // ── PLAN DATA ────────────────────────────────────────────────────
@@ -576,6 +577,7 @@ function resetTransientState(){
   recVals={schlaf:0,stress:0,energie:0};
   expandedHabit=null;
   addHabitOpen=false;
+  editingHistIdx=null;
   if(typeof breathTimer!=='undefined'&&breathTimer){stopBreathing();}
 }
 function setView(v){
@@ -966,7 +968,26 @@ function renderScan(){
     h+=`<div style="text-align:center;padding:20px;color:var(--text3);font-size:13px">Noch keine Mahlzeiten heute</div>`;
   } else {
     h+=`<div class="scan-history">`;
-    history.forEach((item,i)=>{h+=`<div class="scan-hist-row"><div><div class="scan-hist-name">${item.name}</div><div class="scan-hist-macros">${item.protein}g P · ${item.carbs}g K · ${item.fat}g F · ${item.grams||''}${item.grams?'g':''}</div></div><div style="display:flex;align-items:center;gap:10px"><div class="scan-hist-kcal">${item.kcal} kcal</div><button onclick="removeFromHistory(${i})" style="background:none;border:none;color:var(--text3);font-size:18px;cursor:pointer">×</button></div></div>`;});
+    let editIdx=(typeof editingHistIdx!=='undefined')?editingHistIdx:null;
+    history.forEach((item,i)=>{
+      if(editIdx===i){
+        h+=`<div class="scan-hist-row" style="flex-direction:column;align-items:stretch;gap:8px;background:var(--s2)">
+          <div style="display:flex;gap:6px"><input class="ah-input" id="editName" value="${item.name}" style="flex:1"/></div>
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:5px">
+            <input class="ah-input" id="editKcal" type="number" value="${item.kcal}" placeholder="kcal" style="font-size:12px;padding:0 6px;text-align:center"/>
+            <input class="ah-input" id="editProt" type="number" value="${item.protein}" step="0.1" placeholder="g P" style="font-size:12px;padding:0 6px;text-align:center"/>
+            <input class="ah-input" id="editCarb" type="number" value="${item.carbs}" step="0.1" placeholder="g K" style="font-size:12px;padding:0 6px;text-align:center"/>
+            <input class="ah-input" id="editFat" type="number" value="${item.fat}" step="0.1" placeholder="g F" style="font-size:12px;padding:0 6px;text-align:center"/>
+          </div>
+          <div style="display:flex;gap:6px">
+            <button onclick="saveHistEdit(${i})" style="flex:1;padding:8px;border-radius:var(--rxs);background:var(--green);border:none;color:#000;font-size:12px;font-weight:700;cursor:pointer">Speichern</button>
+            <button onclick="editingHistIdx=null;renderScan()" style="padding:8px 14px;border-radius:var(--rxs);background:var(--s3);border:none;color:var(--text2);font-size:12px;cursor:pointer">Abbrechen</button>
+          </div>
+        </div>`;
+      } else {
+        h+=`<div class="scan-hist-row" onclick="editingHistIdx=${i};renderScan()" style="cursor:pointer"><div><div class="scan-hist-name">${item.name}</div><div class="scan-hist-macros">${item.protein}g P · ${item.carbs}g K · ${item.fat}g F · ${item.grams||''}${item.grams?'g':''}</div></div><div style="display:flex;align-items:center;gap:10px"><div class="scan-hist-kcal">${item.kcal} kcal</div><button onclick="event.stopPropagation();removeFromHistory(${i})" style="background:none;border:none;color:var(--text3);font-size:18px;cursor:pointer">×</button></div></div>`;
+      }
+    });
     h+=`</div>`;
     const totK=history.reduce((a,b)=>a+b.kcal,0);const totP=Math.round(history.reduce((a,b)=>a+b.protein,0)*10)/10;const totC=Math.round(history.reduce((a,b)=>a+b.carbs,0)*10)/10;const totF=Math.round(history.reduce((a,b)=>a+b.fat,0)*10)/10;
     h+=`<div class="ib g"><div class="ib-t">Summe heute</div><div class="ib-tx">${totK} kcal · ${totP}g Protein · ${totC}g KH · ${totF}g Fett</div></div>`;
@@ -1043,6 +1064,27 @@ function addManualToDay(){const name=document.getElementById('manName').value.tr
 function triggerScan(){document.getElementById('fileInput').click();}
 function updatePortionCalc(){const el=document.getElementById('portionCalc');if(!el||!scanResult)return;const g=parseFloat(document.getElementById('portionGrams').value)||100;const f=g/100;const b=scanResult.per100;el.innerHTML=`Bei <strong style="color:var(--text)">${g}g</strong>: <strong style="color:var(--amber)">${Math.round(b.kcal*f)} kcal</strong> · <strong style="color:var(--green)">${Math.round(b.protein*f*10)/10}g Protein</strong> · ${Math.round(b.carbs*f*10)/10}g KH · ${Math.round(b.fat*f*10)/10}g Fett`;}
 function addToDay(){if(!scanResult)return;const g=parseFloat(document.getElementById('portionGrams').value)||100;const f=g/100;const b=scanResult.per100;const entry={name:scanResult.name||'Lebensmittel',grams:Math.round(g),kcal:Math.round(b.kcal*f),protein:Math.round(b.protein*f*10)/10,carbs:Math.round(b.carbs*f*10)/10,fat:Math.round(b.fat*f*10)/10};const hist=loadScanHistory();hist.push(entry);saveScanHistory(hist);const m=loadMacros();m.kcal=Math.round((m.kcal||0)+entry.kcal);m.protein=Math.round(((m.protein||0)+entry.protein)*10)/10;m.carbs=Math.round(((m.carbs||0)+entry.carbs)*10)/10;m.fat=Math.round(((m.fat||0)+entry.fat)*10)/10;saveMacros(m);scanResult=null;renderScan();}
+let editingHistIdx=null;
+function saveHistEdit(i){
+  const hist=loadScanHistory();
+  const old=hist[i];
+  const name=document.getElementById('editName')?.value.trim()||old.name;
+  const kcal=parseFloat(document.getElementById('editKcal')?.value)||0;
+  const protein=parseFloat(document.getElementById('editProt')?.value)||0;
+  const carbs=parseFloat(document.getElementById('editCarb')?.value)||0;
+  const fat=parseFloat(document.getElementById('editFat')?.value)||0;
+  // Makro-Differenz berechnen und Tagesmakros anpassen
+  const m=loadMacros();
+  m.kcal=Math.max(0,Math.round((m.kcal||0)-old.kcal+kcal));
+  m.protein=Math.max(0,Math.round(((m.protein||0)-old.protein+protein)*10)/10);
+  m.carbs=Math.max(0,Math.round(((m.carbs||0)-old.carbs+carbs)*10)/10);
+  m.fat=Math.max(0,Math.round(((m.fat||0)-old.fat+fat)*10)/10);
+  saveMacros(m);
+  hist[i]={...old,name,kcal,protein,carbs,fat};
+  saveScanHistory(hist);
+  editingHistIdx=null;
+  renderScan();
+}
 function removeFromHistory(i){const hist=loadScanHistory();const removed=hist.splice(i,1)[0];saveScanHistory(hist);const m=loadMacros();m.kcal=Math.max(0,Math.round((m.kcal||0)-removed.kcal));m.protein=Math.max(0,Math.round(((m.protein||0)-removed.protein)*10)/10);m.carbs=Math.max(0,Math.round(((m.carbs||0)-removed.carbs)*10)/10);m.fat=Math.max(0,Math.round(((m.fat||0)-removed.fat)*10)/10);saveMacros(m);renderScan();}
 async function handleFileSelect(event){const file=event.target.files[0];if(!file)return;event.target.value='';const key=getApiKey();if(!key)return;const btn=document.getElementById('scanBtn');if(btn){btn.textContent='⏳ Wird analysiert...';btn.className='scan-btn loading';btn.disabled=true;}try{const b64=await new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result.split(',')[1]);r.onerror=()=>rej(new Error('Lesen fehlgeschlagen'));r.readAsDataURL(file);});const mime=file.type||'image/jpeg';const resp=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:500,messages:[{role:'user',content:[{type:'image',source:{type:'base64',media_type:mime,data:b64}},{type:'text',text:'Analysiere dieses Nährwertetikett. Antworte NUR mit JSON (keine Backticks): {"name":"Produktname","per100":{"kcal":0,"protein":0,"carbs":0,"fat":0}} Alle Werte pro 100g.'}]}]})});if(!resp.ok){const err=await resp.json();throw new Error(err.error?.message||'API Fehler '+resp.status);}const data=await resp.json();const text=data.content.map(c=>c.text||'').join('');const clean=text.replace(/```json|```/g,'').trim();scanResult=JSON.parse(clean);}catch(e){scanResult=null;const errBox=document.createElement('div');errBox.className='scan-error';errBox.innerHTML=`<strong>Fehler:</strong> ${e.message}`;const el=document.getElementById('vScan');if(el)el.insertBefore(errBox,el.firstChild);}renderScan();}
 
@@ -1051,10 +1093,12 @@ let githubSHA=null;let syncTimeout=null;let syncStatus='idle';
 function getGithubConfig(){return ld('tc_github',{token:'',owner:'',repo:''});}
 function githubConfigured(){const c=getGithubConfig();return !!(c.token&&c.owner&&c.repo);}
 function getAllData(){const data={};for(let i=0;i<localStorage.length;i++){const key=localStorage.key(i);if(key&&key.startsWith('tc_')&&key!=='tc_github'){try{data[key]=JSON.parse(localStorage.getItem(key));}catch(e){data[key]=localStorage.getItem(key);}}}return data;}
-async function loadFromGithub(){if(!githubConfigured())return;const c=getGithubConfig();setSyncStatus('syncing');try{const resp=await fetch(`https://api.github.com/repos/${c.owner}/${c.repo}/contents/data.json`,{headers:{'Authorization':`token ${c.token}`,'Accept':'application/vnd.github.v3+json'}});if(resp.status===404){setSyncStatus('idle');return;}if(!resp.ok)throw new Error('Laden fehlgeschlagen: '+resp.status);const json=await resp.json();githubSHA=json.sha;const data=JSON.parse(decodeURIComponent(escape(atob(json.content.replace(/\n/g,'')))));Object.entries(data).forEach(([k,v])=>{localStorage.setItem(k,JSON.stringify(v));});setSyncStatus('saved');renderAll();}catch(e){console.error('GitHub load:',e);setSyncStatus('error',e.message);}}
+async function loadFromGithub(){if(!githubConfigured())return;const c=getGithubConfig();setSyncStatus('syncing');try{const resp=await fetch(`https://api.github.com/repos/${c.owner}/${c.repo}/contents/data.json`,{headers:{'Authorization':`token ${c.token}`,'Accept':'application/vnd.github.v3+json'}});if(resp.status===404){setSyncStatus('idle');return;}if(!resp.ok)throw new Error('Laden fehlgeschlagen: '+resp.status);const json=await resp.json();githubSHA=json.sha;const data=JSON.parse(decodeURIComponent(escape(atob(json.content.replace(/\n/g,'')))));Object.entries(data).forEach(([k,v])=>{localStorage.setItem(k,JSON.stringify(v));});setSyncStatus('saved');// Woche + Tag nach GitHub-Load neu berechnen (tc_start_date jetzt geladen)
+cW=getTodayWeek();cD=getTodayDay();renderAll();}catch(e){console.error('GitHub load:',e);setSyncStatus('error',e.message);}}
 async function saveToGithub(){if(!githubConfigured())return;const c=getGithubConfig();setSyncStatus('syncing');try{const data=getAllData();const content=btoa(unescape(encodeURIComponent(JSON.stringify(data,null,0))));const body={message:'Auto-save '+new Date().toISOString(),content,...(githubSHA?{sha:githubSHA}:{})};const resp=await fetch(`https://api.github.com/repos/${c.owner}/${c.repo}/contents/data.json`,{method:'PUT',headers:{'Authorization':`token ${c.token}`,'Accept':'application/vnd.github.v3+json','Content-Type':'application/json'},body:JSON.stringify(body)});if(!resp.ok){const err=await resp.json();throw new Error(err.message||'Speichern fehlgeschlagen');}const json=await resp.json();githubSHA=json.content.sha;sv('tc_last_sync',new Date().toISOString());setSyncStatus('saved');}catch(e){console.error('GitHub save:',e);setSyncStatus('error',e.message);}}
 function scheduleSave(){if(!githubConfigured())return;clearTimeout(syncTimeout);setSyncStatus('pending');syncTimeout=setTimeout(saveToGithub,3000);}
-function setSyncStatus(status,msg){syncStatus=status;const el=document.getElementById('syncIndicator');if(!el)return;if(!githubConfigured()){el.style.display='none';return;}el.style.display='flex';const cfg={idle:{icon:'☁️',label:'GitHub',color:'var(--text3)'},pending:{icon:'⏳',label:'...',color:'var(--amber)'},syncing:{icon:'⏳',label:'Syncing',color:'var(--amber)'},saved:{icon:'✓',label:'Gespeichert',color:'var(--green)'},error:{icon:'⚠️',label:msg||'Fehler',color:'var(--red)'}};const s=cfg[status]||cfg.idle;el.innerHTML=`<span style="color:${s.color};font-size:11px;font-weight:600">${s.icon} ${s.label}</span>`;}
+let lastSyncError='';
+function setSyncStatus(status,msg){syncStatus=status;const el=document.getElementById('syncIndicator');if(!el)return;if(!githubConfigured()){el.style.display='none';return;}el.style.display='flex';if(status==='error')lastSyncError=msg||'Unbekannter Fehler';const cfg={idle:{icon:'☁️',label:'GitHub',color:'var(--text3)'},pending:{icon:'⏳',label:'...',color:'var(--amber)'},syncing:{icon:'⏳',label:'Syncing',color:'var(--amber)'},saved:{icon:'✓',label:'Gespeichert',color:'var(--green)'},error:{icon:'⚠️',label:'Fehler',color:'var(--red)'}};const s=cfg[status]||cfg.idle;const clickable=status==='error'?` onclick="alert('GitHub Sync Fehler: '+lastSyncError)" style="cursor:pointer"`:'';el.innerHTML=`<span${clickable} style="color:${s.color};font-size:11px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:block">${s.icon} ${s.label}</span>`;}
 function saveGithubConfig(){const token=document.getElementById('ghToken').value.trim();const owner=document.getElementById('ghOwner').value.trim();const repo=document.getElementById('ghRepo').value.trim();localStorage.setItem('tc_github',JSON.stringify({token,owner,repo}));githubSHA=null;renderProfil();if(token&&owner&&repo)loadFromGithub();}
 function syncNow(){saveToGithub().then(()=>{if(cV==='Profil')renderProfil();});}
 
@@ -1482,7 +1526,7 @@ function toggleAddHabit(){addHabitOpen=!addHabitOpen;renderFortschritt();}
 function saveNewHabit(){
   const name=document.getElementById('ahName')?.value.trim()||newHabit.name;
   if(!name){alert('Bitte Namen eingeben.');return;}
-  const habits=getHabits();
+  const habits=[...getHabits()]; // Kopie statt Referenz, um DEFAULT_HABITS nicht zu mutieren
   const id='custom_'+Date.now();
   habits.push({id,name,emoji:newHabit.emoji,type:newHabit.type,goal:newHabit.goal,auto:null});
   saveHabits(habits);
@@ -1511,8 +1555,9 @@ function renderAll(){
 setSyncStatus('idle');
 cW=getTodayWeek();
 cD=getTodayDay();
-loadFromGithub().then(()=>renderAll()).catch(()=>renderAll());
+// Erst lokal rendern, dann GitHub laden (cW/cD wird in loadFromGithub neu gesetzt)
 renderAll();
+loadFromGithub().catch(()=>{});
 </script>
 </body>
 </html>
