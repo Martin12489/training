@@ -528,7 +528,10 @@ function getTodayWeek(){
   if(!sd)return 0;
   const start=new Date(sd);const today=new Date();
   today.setHours(0,0,0,0);start.setHours(0,0,0,0);
-  const diff=Math.floor((today-start)/(1000*60*60*24));
+  let diff=Math.floor((today-start)/(1000*60*60*24));
+  // Pause-Offset abziehen
+  const pauseDays=ld('tc_pause_days',0);
+  diff=Math.max(0,diff-pauseDays);
   if(diff<0)return 0;
   return Math.min(Math.floor(diff/7),5);
 }
@@ -846,6 +849,27 @@ function renderProfil(){
       <div style="font-size:11px;color:var(--text3);margin-top:6px;line-height:1.5">Aktuell berechnet: Woche ${getTodayWeek()+1}, ${['Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag','Sonntag'][getTodayDay()]}. Falls falsch: hier den echten Montag deiner Woche 1 eintragen – wird automatisch auf den nächsten Montag davor korrigiert.</div>
     </div>
   </div>
+  <div class="lbl" style="margin-top:16px">Plan pausieren</div>
+  <div class="profile-card">
+    ${(()=>{
+      const pauseStart=ld('tc_pause_start',null);
+      const pauseDays=ld('tc_pause_days',0);
+      if(pauseStart){
+        const start=new Date(pauseStart);
+        const today=new Date();
+        const days=Math.floor((today-start)/(1000*60*60*24));
+        return `<div style="background:var(--abg);border:1px solid rgba(240,160,48,0.2);border-radius:var(--rsm);padding:10px 12px;margin-bottom:10px">
+          <div style="font-size:13px;font-weight:600;color:var(--amber)">⏸ Plan pausiert</div>
+          <div style="font-size:12px;color:var(--text2);margin-top:4px">Pausiert seit ${days} Tag${days!==1?'en':''} · ${pauseDays} bisherige Pausentage gesamt</div>
+        </div>
+        <button onclick="endPause()" style="width:100%;padding:12px;border-radius:var(--rsm);background:var(--green);border:none;color:#000;font-size:13px;font-weight:700;cursor:pointer">▶ Pause beenden – weiter mit Woche ${getTodayWeek()+1}</button>`;
+      } else {
+        return `<div style="font-size:13px;color:var(--text2);margin-bottom:12px;line-height:1.6">Pause starten friert die Wochenzählung ein. Wenn du zurückkommst, beendet die App die Pause automatisch und du machst genau dort weiter wo du aufgehört hast.</div>
+        <button onclick="startPause()" style="width:100%;padding:12px;border-radius:var(--rsm);border:1px solid rgba(240,160,48,0.3);background:var(--abg);color:var(--amber);font-size:13px;font-weight:600;cursor:pointer">⏸ Plan jetzt pausieren</button>
+        ${pauseDays>0?`<div style="font-size:11px;color:var(--text3);margin-top:8px">Bisherige Pausentage: ${pauseDays}</div>`:''}`;
+      }
+    })()}
+  </div>
   <div class="lbl" style="margin-top:16px">Daten zurücksetzen</div>
   <div class="profile-card">
     <div style="font-size:13px;color:var(--text2);margin-bottom:12px;line-height:1.6">Plan neu starten löscht alle Trainingsdaten lokal und in GitHub, und setzt den Start auf den nächsten Montag. Profil und Einstellungen bleiben erhalten.</div>
@@ -867,6 +891,25 @@ function fixStartDate(){
   picked.setDate(picked.getDate()+offsetToMonday);
   picked.setHours(0,0,0,0);
   sv('tc_start_date',picked.toISOString());
+  cW=getTodayWeek();cD=getTodayDay();
+  renderAll();
+}
+
+function startPause(){
+  if(!confirm('Plan jetzt pausieren? Die Wochenzählung wird eingefroren bis du "Pause beenden" drückst.'))return;
+  sv('tc_pause_start',new Date().toISOString());
+  renderProfil();
+}
+
+function endPause(){
+  const pauseStart=ld('tc_pause_start',null);
+  if(!pauseStart)return;
+  const start=new Date(pauseStart);
+  const today=new Date();
+  const days=Math.floor((today-start)/(1000*60*60*24));
+  const existing=ld('tc_pause_days',0);
+  sv('tc_pause_days',existing+days);
+  sv('tc_pause_start',null);
   cW=getTodayWeek();cD=getTodayDay();
   renderAll();
 }
