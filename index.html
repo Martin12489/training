@@ -967,7 +967,7 @@ function renderProfil(){
     <div class="profile-field" style="margin-bottom:0">
       <div class="field-label">Trainingsstart (Montag Woche 1)</div>
       <input class="field-input" type="date" id="startDateInput" value="${(()=>{const sd=ld('tc_start_date',null);return sd?new Date(sd).toISOString().slice(0,10):'';})()}" onchange="fixStartDate()"/>
-      <div style="font-size:11px;color:var(--text3);margin-top:6px;line-height:1.5">Aktuell berechnet: Woche ${getTodayWeek()+1}, ${['Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag','Sonntag'][getTodayDay()]}. Falls falsch: hier den echten Montag deiner Woche 1 eintragen – wird automatisch auf den nächsten Montag davor korrigiert.</div>
+      <div style="font-size:11px;color:var(--text3);margin-top:6px;line-height:1.5">Aktuell berechnet: Woche ${getTodayWeek()+1}, ${['Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag','Sonntag'][getTodayDay()]}. Trag hier den Montag deiner Woche 1 ein – falls ein anderer Tag gewählt wird, springt die App automatisch zum nächsten Montag danach.</div>
     </div>
   </div>
   <div class="lbl" style="margin-top:16px">Plan pausieren</div>
@@ -1006,14 +1006,21 @@ function fixStartDate(){
   const val=document.getElementById('startDateInput')?.value;
   if(!val)return;
   const picked=new Date(val+'T00:00:00');
-  // Auf den Montag dieser Woche snappen (falls kein Montag gewählt wurde)
-  const day=picked.getDay(); // 0=So,1=Mo...
-  const offsetToMonday=day===0?-6:1-day;
-  picked.setDate(picked.getDate()+offsetToMonday);
+  const day=picked.getDay(); // 0=So,1=Mo,...,6=Sa
+  if(day!==1){
+    // Zum nächsten Montag vorwärts springen
+    const daysToMonday=day===0?1:8-day;
+    picked.setDate(picked.getDate()+daysToMonday);
+  }
   picked.setHours(0,0,0,0);
+  // Feedback anzeigen
+  const dateStr=picked.toLocaleDateString('de-DE',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
   sv('tc_start_date',picked.toISOString());
   cW=getTodayWeek();cD=getTodayDay();
   renderAll();
+  // Datum-Feld aktualisieren damit user den korrigierten Montag sieht
+  const inp=document.getElementById('startDateInput');
+  if(inp)inp.value=picked.toISOString().slice(0,10);
 }
 
 function startPause(){
