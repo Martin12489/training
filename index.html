@@ -236,6 +236,16 @@ html,body{height:100%;background:#0E0E0C;font-family:-apple-system,BlinkMacSyste
 .rot-warning-icon{font-size:28px;flex-shrink:0}
 .rot-warning-title{font-size:15px;font-weight:700;color:var(--red);margin-bottom:6px}
 .rot-warning-text{font-size:13px;color:var(--text2);line-height:1.6}
+
+.pre-workout-bar{background:rgba(27,240,126,0.08);border:1px solid rgba(27,240,126,0.2);border-radius:var(--rsm);padding:10px 14px;margin-bottom:12px;font-size:12px;color:#1BF07E;line-height:1.6}
+.block-card{background:var(--s1);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:10px;overflow:hidden}
+.block-header{display:flex;align-items:center;justify-content:space-between;padding:9px 14px;background:var(--s2);border-bottom:1px solid var(--border);flex-wrap:wrap;gap:6px}
+.block-label{font-size:11px;font-weight:700;color:var(--text2);letter-spacing:.06em;text-transform:uppercase}
+.block-ab{width:24px;height:24px;border-radius:var(--rxs);background:var(--s3);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:var(--text2);flex-shrink:0}
+.block-sep{text-align:center;padding:5px;font-size:11px;color:var(--text3);background:var(--s2);border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+.zone2-eve-title{font-size:12px;font-weight:600;color:var(--green);margin-bottom:5px}
+.zone2-eve-item{font-size:12px;color:var(--text2);padding:2px 0;display:flex;align-items:center;gap:6px}
+.zone2-eve-item::before{content:'·';color:var(--green)}
 .gelb-hint{background:rgba(240,160,48,0.08);border:1px solid rgba(240,160,48,0.25);border-radius:var(--rsm);padding:11px 14px;margin-bottom:12px;font-size:13px;color:var(--text2);line-height:1.5}
 .habit-section{margin-bottom:16px}
 .habit-row-item{background:var(--s1);border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px;margin-bottom:6px;cursor:pointer;transition:all .15s}
@@ -434,47 +444,125 @@ html,body{height:100%;background:#0E0E0C;font-family:-apple-system,BlinkMacSyste
 // Progression index: W0-1→0, W2-3→1, W4→2, W5→3
 const getPI=(w)=>w<=1?0:w<=3?1:w===4?2:3;
 const PHASES=[
-  {f:"Technik + Kontrolle",r:"RPE 6–7"},
-  {f:"Aufbau + Last",r:"RPE 7–8"},
-  {f:"Stärkste Woche",r:"RPE 8 MAX"},
-  {f:"Deload",r:"RPE 5–6"}
+  {f:"Einstieg · Oberkörper",r:"RPE 7"},
+  {f:"Aufbau · Oberkörper",r:"RPE 7–8"},
+  {f:"Vollplan · Aufbau",r:"RPE 7–8"},
+  {f:"Vollplan · Peak / Deload",r:"RPE 8 / RPE 6"},
 ];
 
-// Day base definitions - exercises shared across all 6 weeks
-const DAY_BASE=[
-  {title:"Lower Body – Glutes & Becken",glute:true,zone2eve:false,ex:[
-    {id:"tbdl",n:"Trap Bar Deadlift",w:true,pause:"90–120 Sek",note:"Glutes initiieren Push vom Boden. Kein Grinding.",prog:["4×6","4×5","5×3","3×5 leicht"]},
-    {id:"bss",n:"Bulgarian Split Squat",w:true,pause:"75 Sek",note:"Leicht vorlehnen → Glute-Fokus. Hinteres Knie bodennah.",prog:["3×8/Bein","4×8","4×6","2×8 leicht"]},
-    {id:"ht",n:"Barbell Hip Thrust",w:true,pause:"60 Sek",note:"2 Sek Peak Hold. Maximal anspannen oben.",prog:["4×10","4×8","4×6","3×10 leicht"]},
-    {id:"dbmo",n:"Dead Bug",w:false,pause:"45 Sek",note:"LWS flach am Boden – Becken neutral halten.",prog:["3×10/Seite","3×10","3×10","2×10"]},
-    {id:"hkr",n:"Hanging Knee Raises",w:false,pause:"45 Sek",note:"Becken kippt nicht – kontrolliert senken.",prog:["3×12","3×12","3×12","2×10"]},
-  ]},
-  {title:"Upper Push – Brust & Haltung",glute:false,zone2eve:false,ex:[
-    {id:"idbp",n:"Incline DB Bench Press",w:true,pause:"90 Sek",note:"Schulterblätter aktiv nach unten. Brust dehnen oben.",prog:["4×10","4×8","5×6","3×10 leicht"]},
-    {id:"lmp",n:"Landmine Press",w:true,pause:"60 Sek",note:"Schulterfreundlich – Rotationsstabilität. Becken fixiert.",prog:["3×10","3×10","3×8","2×10 leicht"]},
-    {id:"cfly",n:"Cable Fly",w:true,pause:"60 Sek",note:"Brust öffnen – hält Schultern zurück.",prog:["3×12","3×12","3×12","2×12"]},
-    {id:"fpu",n:"Face Pulls",w:false,pause:"45 Sek",note:"Externe Rotation betonen. Pflicht für Schulterposition.",prog:["4×15","4×15","4×15","3×15"]},
-    {id:"palp",n:"Pallof Press",w:false,pause:"45 Sek",note:"Anti-Rotation – Becken stabil. Direkter Effekt auf Bauchoptik.",prog:["3×12/Seite","3×12","3×12","2×12"]},
-  ]},
-  {title:"Lower – Posterior Chain",glute:true,zone2eve:false,ex:[
-    {id:"rdl",n:"Romanian Deadlift",w:true,pause:"90 Sek",note:"Hinge sauber – Glutes initiieren. Nicht Rücken.",prog:["4×8","4×6–8","5×6","3×8 leicht"]},
-    {id:"wlu",n:"Walking Lunges",w:true,pause:"75 Sek",note:"Schrittlänge bewusst – Hüftbeuger strecken.",prog:["3×12/Bein","3×12","4×10","2×12 leicht"]},
-    {id:"slr",n:"Single Leg RDL",w:true,pause:"60 Sek",note:"Balance + Glute-Aktivierung + Stabilität in einem.",prog:["3×10/Seite","3×10","3×8","2×10"]},
-    {id:"abw",n:"Ab Wheel Rollout",w:false,pause:"60 Sek",note:"Langsam – Rücken nicht durchhängen. Wichtig für flachen Bauch.",prog:["3×8","4×10","4×10","2×8"]},
-  ]},
-  {title:"Upper Pull – Rücken",glute:false,zone2eve:true,ex:[
-    {id:"pul",n:"Pull-ups",w:false,pause:"90 Sek",note:"Volle Streckung unten. Schulterblätter aktiv. Ziel: 6–10 saubere Reps.",prog:["4×max","4×max","4×max","3×5"]},
-    {id:"csro",n:"Chest Supported Row",w:true,pause:"75 Sek",note:"Schulterblätter zusammenziehen – Ellbogen nah am Körper.",prog:["4×10","4×8","5×8","3×10 leicht"]},
-    {id:"lpd",n:"Lat Pulldown",w:true,pause:"60 Sek",note:"Breit greifen – Lats dehnen oben.",prog:["3×12","3×10","3×10","2×12"]},
-    {id:"rfly",n:"Reverse Fly",w:false,pause:"45 Sek",note:"Hintere Schulter – direkt gegen Rundrücken.",prog:["3×15","3×15","3×15","2×15"]},
-    {id:"fwlk",n:"Farmer's Walk",w:false,pause:"60 Sek",note:"Aufrecht. Schultern runter. Kern angespannt.",prog:["4×30m","5×35m","6×40m","4×30m"]},
-  ]},
+// Pre-Workout Protokoll
+const PRE_WORKOUT="🍌 ½ Banane + 15g Erbsenprotein · 15–20 Min vor dem Training · 💧 300–500 ml Wasser + 1 Prise Salz";
+
+// Woche 0–2: NUR OBERKÖRPER
+const DAY_OBK=[
+  {title:"Oberkörper A – Brust & Rücken",pre:"Couch Stretch 45 Sek/Seite + Glute Bridge 1×15",
+   blocks:[
+    {label:"Block 1",pause:"90 Sek",sets:["3×10","3×8","3×6","2×10"],rpe:["l","m","m","l"],
+     a1:{id:"idbp",n:"Incline DB Bench Press",w:true,note:"Schulterblätter aktiv nach unten – Brust dehnt oben"},
+     a2:{id:"csro",n:"Chest Supported Row",w:true,note:"Ellbogen nah am Körper · Schulterblätter zusammenziehen"}},
+    {label:"Block 2",pause:"60 Sek",sets:["3×12","3×10","3×10","2×12"],rpe:["l","l","l","l"],
+     a1:{id:"spm",n:"Shoulder Press Maschine",w:true,note:"Sitzend mit Rückenstütze"},
+     a2:{id:"fpu",n:"Face Pulls",w:false,note:"Außenrotation betonen – Pflicht für Schultergesundheit"}},
+    {label:"Block 3",pause:"60 Sek",sets:["2×12","2×12","2×12","2×12"],rpe:["l","l","l","l"],
+     a1:{id:"palp",n:"Pallof Press",w:false,note:"Anti-Rotation · Becken fixiert halten"},
+     a2:{id:"ccr",n:"Cable Crunch (kniend)",w:true,note:"Schweres Bauchtraining · Hypertrophie-Fokus"}},
+   ]},
+  {title:"Oberkörper B – Rücken & Schultern",pre:null,
+   blocks:[
+    {label:"Block 1",pause:"90 Sek",sets:["3×10","3×8","3×6","2×10"],rpe:["l","m","m","l"],
+     a1:{id:"lpd",n:"Lat Pulldown (breit)",w:true,note:"Lats oben dehnen · nicht mit Schwung ziehen"},
+     a2:{id:"dips",n:"Dips / Chest Press Maschine",w:true,note:"Ellbogen leicht vorne · Brust dehnt unten"}},
+    {label:"Block 2",pause:"60 Sek",sets:["3×12","3×10","3×10","2×12"],rpe:["l","l","l","l"],
+     a1:{id:"rfly",n:"Reverse Fly Maschine",w:true,note:"Hintere Schulter – direkt gegen Rundrücken"},
+     a2:{id:"lrs",n:"Lateral Raises (sitzend)",w:true,note:"Schulterbreite · sauber ohne Schwung"}},
+    {label:"Block 3",pause:"60 Sek",sets:["2×12","2×12","2×12","2×12"],rpe:["l","l","l","l"],
+     a1:{id:"hkr",n:"Hanging Knee Raises",w:false,note:"Becken kippt nicht · kontrolliert senken"},
+     a2:{id:"biz",n:"Bizeps Curl / Trizeps Pushdown",w:true,note:"Abschluss · moderate Last"}},
+   ]},
+  {title:"Oberkörper A Variation – schwerer",pre:"Couch Stretch 45 Sek/Seite + Glute Bridge 1×15",
+   blocks:[
+    {label:"Block 1",pause:"90 Sek",sets:["3×8","3×6","3×5","2×8"],rpe:["m","m","h","l"],
+     a1:{id:"idbp",n:"Incline DB Bench Press (schwerer)",w:true,note:"RPE 8 · mehr Gewicht als Montag"},
+     a2:{id:"scr",n:"Seated Cable Row",w:true,note:"Enges Griff · volle Streckung vorne"}},
+    {label:"Block 2",pause:"60 Sek",sets:["3×12","3×10","3×10","2×12"],rpe:["l","l","l","l"],
+     a1:{id:"lmp",n:"Landmine Press",w:true,note:"Schulterfreundlich · Rotationsstabilität"},
+     a2:{id:"bpa",n:"Band Pull Aparts",w:false,note:"Haltungskorrektur · täglich möglich"}},
+    {label:"Block 3",pause:"60 Sek",sets:["2×10","2×10","2×10","2×10"],rpe:["l","l","l","l"],
+     a1:{id:"abw",n:"Ab Wheel (von Knien)",w:false,note:"Langsam · Rücken nicht durchhängen"},
+     a2:{id:"palp",n:"Pallof Press",w:false,note:"Anti-Rotation · andere Seite fokussieren"}},
+   ]},
+  {title:"Oberkörper B Variation – schwerer",pre:null,
+   blocks:[
+    {label:"Block 1",pause:"90 Sek",sets:["3×8","3×6","3×5","2×8"],rpe:["m","m","h","l"],
+     a1:{id:"pul",n:"Pull-ups / Klimmzüge",w:false,note:"Volle Streckung unten · Schulterblätter aktiv"},
+     a2:{id:"cfly",n:"Cable Fly",w:true,note:"Brust dehnen oben · Schultern öffnen"}},
+    {label:"Block 2",pause:"60 Sek",sets:["3×12","3×10","3×10","2×12"],rpe:["l","l","l","l"],
+     a1:{id:"bfly",n:"Butterfly Reverse Maschine",w:true,note:"Hintere Schulter isoliert"},
+     a2:{id:"ap",n:"Arnold Press",w:true,note:"Schultergesundheit + Mobilität"}},
+    {label:"Block 3",pause:"60 Sek",sets:["2×12","2×12","2×12","2×12"],rpe:["l","l","l","l"],
+     a1:{id:"hh",n:"Hollow Hold (30–40 Sek)",w:false,note:"Liegend · tiefe Bauchmuskulatur"},
+     a2:{id:"dbu",n:"Dead Bug (10/Seite)",w:false,note:"LWS flach · Becken neutral"}},
+   ]},
 ];
+
+// Woche 3–5: VOLLPLAN
+const DAY_FULL=[
+  {title:"Oberkörper A – Brust & Rücken",pre:"Couch Stretch 45 Sek/Seite + Glute Bridge 1×15",
+   blocks:[
+    {label:"Block 1",pause:"90 Sek",sets:["3×10","3×8","3×6","2×10"],rpe:["l","m","m","l"],
+     a1:{id:"idbp",n:"Incline DB Bench Press",w:true,note:"Schulterblätter aktiv nach unten"},
+     a2:{id:"csro",n:"Chest Supported Row",w:true,note:"Liegend · volle Kontraktion"}},
+    {label:"Block 2",pause:"60 Sek",sets:["3×12","3×10","3×10","2×12"],rpe:["l","l","l","l"],
+     a1:{id:"spm",n:"Shoulder Press Maschine",w:true,note:"Sitzend"},
+     a2:{id:"fpu",n:"Face Pulls",w:false,note:"Pflicht · Außenrotation"}},
+    {label:"Block 3",pause:"60 Sek",sets:["2×12","2×12","2×12","2×12"],rpe:["l","l","l","l"],
+     a1:{id:"palp",n:"Pallof Press",w:false,note:"Anti-Rotation"},
+     a2:{id:"ccr",n:"Cable Crunch",w:true,note:"Hypertrophie Bauch"}},
+   ]},
+  {title:"Unterkörper A – Posterior Chain & APT",pre:"3 Min Haltungs-Upgrade: Couch Stretch 45s/Seite + Glute Bridge 2×15 (2 Sek halten)",
+   blocks:[
+    {label:"Block 1",pause:"90 Sek",sets:["3×8","3×6","3×5","2×8"],rpe:["m","m","h","l"],
+     a1:{id:"tbdl",n:"Trap Bar Deadlift",w:true,note:"Hüftdominant · Glutes initiieren · kein Grinding"},
+     a2:{id:"lcl",n:"Leg Curl (liegend)",w:true,note:"Hamstrings isoliert · volle Bewegung"}},
+    {label:"Block 2",pause:"60 Sek",sets:["3×10","3×10","3×8","2×10"],rpe:["l","m","m","l"],
+     a1:{id:"rdl",n:"Romanian Deadlift",w:true,note:"Hinge sauber · Glutes aktivieren · kein Rundrücken"},
+     a2:{id:"dbu",n:"Dead Bug",w:false,note:"LWS neutral · Becken kontrolliert · langsam"}},
+    {label:"Block 3",pause:"60 Sek",sets:["2×40s","2×45s","2×50s","2×30s"],rpe:["l","l","l","l"],
+     a1:{id:"plk",n:"Plank (Becken nach hinten kippen)",w:false,note:"Posterior Pelvic Tilt aktiv halten · kein Hohlkreuz"},
+     a2:{id:"cwc",n:"Cable Woodchopper",w:true,note:"Rotationsstabilität · je Seite"}},
+   ]},
+  {title:"Oberkörper B – Rücken & Schultern",pre:null,
+   blocks:[
+    {label:"Block 1",pause:"90 Sek",sets:["3×10","3×8","3×6","2×10"],rpe:["l","m","m","l"],
+     a1:{id:"lpd",n:"Lat Pulldown / Pull-ups",w:true,note:"Rückenbreite · Lats oben dehnen"},
+     a2:{id:"dips",n:"Dips / Brustpresse",w:true,note:"Volle Streckung · Brust aktivieren"}},
+    {label:"Block 2",pause:"60 Sek",sets:["3×12","3×10","3×10","2×12"],rpe:["l","l","l","l"],
+     a1:{id:"rfly",n:"Reverse Fly Maschine",w:true,note:"Hintere Schulter"},
+     a2:{id:"lrs",n:"Lateral Raises",w:true,note:"Schulterbreite"}},
+    {label:"Block 3",pause:"60 Sek",sets:["2×12","2×12","2×12","2×12"],rpe:["l","l","l","l"],
+     a1:{id:"hkr",n:"Hanging Knee Raises",w:false,note:"Becken kippt nicht"},
+     a2:{id:"biz",n:"Bizeps / Trizeps",w:true,note:"Abschluss"}},
+   ]},
+  {title:"Unterkörper B – Glutes & Beine",pre:"3 Min Haltungs-Upgrade: Couch Stretch 45s/Seite + Glute Bridge 2×15 (2 Sek halten)",
+   blocks:[
+    {label:"Block 1",pause:"90 Sek",sets:["3×8","3×6","3×5","2×8"],rpe:["m","m","h","l"],
+     a1:{id:"bss",n:"Bulgarian Split Squat",w:true,note:"Leicht vorlehnen · Glute-Fokus · Hüftbeuger öffnen"},
+     a2:{id:"lex",n:"Leg Extension Maschine",w:true,note:"Quads isoliert · volle Streckung oben"}},
+    {label:"Block 2",pause:"60 Sek",sets:["3×10","3×10","3×8","2×10"],rpe:["m","m","m","l"],
+     a1:{id:"ht",n:"Barbell Hip Thrust",w:true,note:"2 Sek oben halten · maximal Gesäß anspannen"},
+     a2:{id:"lcs",n:"Leg Curl (sitzend)",w:true,note:"Hamstrings · volle Bewegung"}},
+    {label:"Block 3",pause:"60 Sek",sets:["2×12","2×12","2×12","2×12"],rpe:["l","l","l","l"],
+     a1:{id:"splk",n:"Side Plank",w:false,note:"Hüfte oben halten · Kern angespannt"},
+     a2:{id:"cwc",n:"Cable Woodchopper",w:true,note:"Anti-Rotation · Core"}},
+   ]},
+];
+
+function getDay(d){return cW<=2?DAY_OBK[d]:DAY_FULL[d];}
 
 const PR_LIFTS=[
-  {label:"Squat/Hip",entries:[{w:0,k:"tc_w0_d0_w_bss"},{w:1,k:"tc_w1_d0_w_bss"},{w:2,k:"tc_w2_d0_w_bss"},{w:3,k:"tc_w3_d0_w_bss"},{w:4,k:"tc_w4_d0_w_bss"},{w:5,k:"tc_w5_d0_w_bss"}]},
-  {label:"Bench",entries:[{w:0,k:"tc_w0_d1_w_idbp"},{w:1,k:"tc_w1_d1_w_idbp"},{w:2,k:"tc_w2_d1_w_idbp"},{w:3,k:"tc_w3_d1_w_idbp"},{w:4,k:"tc_w4_d1_w_idbp"},{w:5,k:"tc_w5_d1_w_idbp"}]},
-  {label:"Deadlift",entries:[{w:0,k:"tc_w0_d2_w_rdl"},{w:1,k:"tc_w1_d2_w_rdl"},{w:2,k:"tc_w2_d2_w_rdl"},{w:3,k:"tc_w3_d2_w_rdl"},{w:4,k:"tc_w4_d2_w_rdl"},{w:5,k:"tc_w5_d2_w_rdl"}]},
+  {label:"Bench",entries:[{w:0,k:"tc_w0_d0_w_idbp"},{w:1,k:"tc_w1_d0_w_idbp"},{w:2,k:"tc_w2_d0_w_idbp"},{w:3,k:"tc_w3_d0_w_idbp"},{w:4,k:"tc_w4_d0_w_idbp"},{w:5,k:"tc_w5_d0_w_idbp"}]},
+  {label:"Hip Thrust",entries:[{w:3,k:"tc_w3_d3_w_ht"},{w:4,k:"tc_w4_d3_w_ht"},{w:5,k:"tc_w5_d3_w_ht"}]},
+  {label:"Deadlift",entries:[{w:3,k:"tc_w3_d1_w_tbdl"},{w:4,k:"tc_w4_d1_w_tbdl"},{w:5,k:"tc_w5_d1_w_tbdl"}]},
 ];
 
 const Z2=[
@@ -505,8 +593,8 @@ const MOB=[
   ]},
 ];
 
-const WM_LABELS=["Technik + Kontrolle","Technik + Kontrolle","Aufbau + Last","Aufbau + Last","Stärkste Woche","Deload"];
-const WM_RPE=["RPE 6–7","RPE 6–7","RPE 7–8","RPE 7–8","RPE 8 MAX","RPE 5–6"];
+const WM_LABELS=["Einstieg · Oberkörper","Aufbau · Oberkörper","Aufbau Variation · Oberkörper","Vollplan · Aufbau","Vollplan · Peak","Deload"];
+const WM_RPE=["RPE 7","RPE 7–8","RPE 7–8","RPE 7–8","RPE 8 MAX","RPE 6"];
 const NUTR=[
   {id:"prot",l:"160 g+ Protein erreicht"},{id:"water",l:"3 Liter Wasser getrunken"},
   {id:"steps",l:"8–10k Schritte gemacht"},{id:"pwod",l:"Post-Workout: Protein + Carbs"},
@@ -603,8 +691,9 @@ function dayDone(w,d){
   if(d===4)return false;
   if(d===5)return Z2.some(o=>ld(`tc_z2_w${w}_${o.id}`,false));
   if(d===6){let a=true;MOB.forEach(b=>b.exs.forEach(e=>{if(!ld(`tc_mob_w${w}_${e.id}`,false))a=false;}));return a;}
-  const day=DAY_BASE[d];
-  for(const ex of day.ex)if(!ld(`tc_w${w}_d${d}_ex_${ex.id}`,false))return false;
+  const day=w<=2?DAY_OBK[d]:DAY_FULL[d];
+  const ids=[];day.blocks.forEach(b=>{ids.push(b.a1.id,b.a2.id);});
+  for(const id of ids)if(!ld(`tc_w${w}_d${d}_ex_${id}`,false))return false;
   return ld(`tc_w${w}_d${d}_cond`,false);
 }
 function weekDone(w){return[0,1,2,3].every(d=>dayDone(w,d));}
@@ -704,9 +793,10 @@ function renderTraining(){
     });
     el.innerHTML=h;return;
   }
-  const day=DAY_BASE[cD];const pi=getPI(cW);const ph=PHASES[pi];
-  let exDone=0,exTotal=day.ex.length+1;
-  day.ex.forEach(e=>{if(ld(ek('ex_'+e.id),false))exDone++;});
+  const day=getDay(cD);const pi=getPI(cW);const ph=PHASES[Math.min(pi,PHASES.length-1)];
+  const blockIds=[];day.blocks.forEach(b=>{blockIds.push(b.a1.id,b.a2.id);});
+  let exDone=0,exTotal=blockIds.length+1;
+  blockIds.forEach(id=>{if(ld(ek('ex_'+id),false))exDone++;});
   if(ld(ek('cond'),false))exDone++;
   let h='';
   h+=recHTML;
@@ -718,7 +808,7 @@ function renderTraining(){
   if(ampelStatus==='r'){
     h+=`<div class="rot-warning"><div class="rot-warning-icon">🛑</div><div><div class="rot-warning-title">Heute besser pausieren</div><div class="rot-warning-text">Dein Körper signalisiert zu hohe Belastung. Bei erhöhtem Cortisol ist intensives Training jetzt kontraproduktiv. Empfehlung: 20–30 Min lockeres Zone 2 oder kompletter Ruhetag. Du kannst trotzdem trainieren – aber mit deutlich reduzierter Last (RPE 5–6).</div></div></div>`;
   }
-  if(day.glute){h+=`<div class="glute-bar"><strong>Glute Activation vorher – 5 Min</strong>Clamshells mit Band 2×15 · Glute Bridge isometrisch 3×20 Sek · Donkey Kicks 2×12/Seite</div>`;}
+  if(day.pre){h+=`<div class="glute-bar"><strong>Vorab – Aktivierung</strong> ${day.pre}</div>`;}
   // Angepasste Phase-Anzeige bei Gelb
   let rpeDisplay=ph.r;
   if(ampelStatus==='y')rpeDisplay=ph.r+' → heute RPE -1';
@@ -728,21 +818,52 @@ function renderTraining(){
   if(ampelStatus==='y'){
     h+=`<div class="gelb-hint"><span style="font-weight:600;color:var(--amber)">⚠️ Reduziert trainieren:</span> Heute RPE -1 bei allen Übungen und 1 Satz weniger. Qualität vor Last.</div>`;
   }
-  h+=`<div class="lbl">Kraftblock</div>`;
-  day.ex.forEach(ex=>{
-    const done=ld(ek('ex_'+ex.id),false);const wt=ld(ek('w_'+ex.id),'');
-    let sets=ex.prog[pi]||ex.prog[ex.prog.length-1];
-    // Bei Gelb: einen Satz reduzieren (visueller Hinweis)
-    let setsDisplay=sets;
-    if(ampelStatus==='y'){
-      const m=sets.match(/^(\d+)×(.+)$/);
-      if(m){const reduced=Math.max(parseInt(m[1])-1,1);setsDisplay=`${reduced}×${m[2]} <span style="color:var(--text3);text-decoration:line-through;font-size:10px">${sets}</span>`;}
-    } else if(ampelStatus==='r'){
-      setsDisplay=`${sets} <span style="color:var(--red);font-size:10px">· leicht</span>`;
-    }
-    h+=`<div class="ex-card${done?' dn':''}"><div class="ex-row"><button class="chk${done?' on':''}" onclick="togEx('${ex.id}')">${done?CHK:''}</button><span class="ex-name">${ex.n}</span><span class="ex-s">${setsDisplay}</span></div>`;
-    if(ex.w)h+=`<div class="w-row"><label>Gewicht</label><input class="w-inp" type="number" value="${wt}" placeholder="–" oninput="saveW('${ex.id}',this.value)"/><span style="font-size:12px;color:var(--text3)">kg</span></div>`;
-    h+=`<div class="ex-note">${ex.note}<span class="pause-chip"> · Pause: ${ex.pause}</span></div></div>`;
+  h+=`<div class="lbl">Trainingsblöcke</div>`;
+  // PRE-WORKOUT Banner
+  h+=`<div class="pre-workout-bar">🥤 ${PRE_WORKOUT}</div>`;
+  // Block-basiertes Rendering
+  const RPE_COLORS={l:'var(--green)',m:'var(--amber)',h:'var(--red)'};
+  const RPE_LABELS={l:'RPE 7',m:'RPE 7–8',h:'RPE 8 MAX'};
+  day.blocks.forEach((blk,bi)=>{
+    const sets=blk.sets[pi]||blk.sets[blk.sets.length-1];
+    const rpe=blk.rpe[pi]||blk.rpe[blk.rpe.length-1];
+    let setsDisp=sets;
+    if(ampelStatus==='y'){const m=sets.match(/^(\d+)×(.+)$/);if(m){const r=Math.max(parseInt(m[1])-1,1);setsDisp=`${r}×${m[2]} <span style="font-size:10px;color:var(--text3);text-decoration:line-through">${sets}</span>`;}}
+    else if(ampelStatus==='r'){setsDisp=`${sets} <span style="font-size:10px;color:var(--red)">· leicht</span>`;}
+    h+=`<div class="block-card">
+      <div class="block-header">
+        <span class="block-label">${blk.label}</span>
+        <div style="display:flex;gap:6px;align-items:center">
+          <span class="ex-s">${setsDisp}</span>
+          <span style="font-size:10px;font-weight:600;color:${RPE_COLORS[rpe]}">${RPE_LABELS[rpe]}</span>
+          <span style="font-size:10px;color:var(--text3)">Pause: ${blk.pause}</span>
+        </div>
+      </div>`;
+    // A1
+    const d1=ld(ek('ex_'+blk.a1.id),false);const w1=ld(ek('w_'+blk.a1.id),'');
+    h+=`<div class="ex-card${d1?' dn':''}" style="border:none;border-radius:0;border-bottom:1px solid var(--border);margin:0">
+      <div class="ex-row">
+        <div class="block-ab">A1</div>
+        <button class="chk${d1?' on':''}" onclick="togEx('${blk.a1.id}')">${d1?CHK:''}</button>
+        <span class="ex-name">${blk.a1.n}</span>
+      </div>
+      ${blk.a1.w?`<div class="w-row"><label>Gewicht</label><input class="w-inp" type="number" value="${w1}" placeholder="–" oninput="saveW('${blk.a1.id}',this.value)"/><span style="font-size:12px;color:var(--text3)">kg</span></div>`:''}
+      <div class="ex-note">${blk.a1.note}</div>
+    </div>`;
+    // Separator
+    h+=`<div class="block-sep">↓ direkt danach – ohne Pause</div>`;
+    // A2
+    const d2=ld(ek('ex_'+blk.a2.id),false);const w2=ld(ek('w_'+blk.a2.id),'');
+    h+=`<div class="ex-card${d2?' dn':''}" style="border:none;border-radius:0;margin:0">
+      <div class="ex-row">
+        <div class="block-ab">A2</div>
+        <button class="chk${d2?' on':''}" onclick="togEx('${blk.a2.id}')">${d2?CHK:''}</button>
+        <span class="ex-name">${blk.a2.n}</span>
+      </div>
+      ${blk.a2.w?`<div class="w-row"><label>Gewicht</label><input class="w-inp" type="number" value="${w2}" placeholder="–" oninput="saveW('${blk.a2.id}',this.value)"/><span style="font-size:12px;color:var(--text3)">kg</span></div>`:''}
+      <div class="ex-note">${blk.a2.note}</div>
+    </div>`;
+    h+=`</div>`;
   });
   const condDone=ld(ek('cond'),false);
   h+=`<button class="cnd-btn${condDone?' on':''}" onclick="togCond()">${condDone?'✓ Einheit abgeschlossen':'Einheit als erledigt markieren'}</button>`;
