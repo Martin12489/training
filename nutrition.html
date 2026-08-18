@@ -221,7 +221,7 @@ const AK=(ds)=>'nutr_a_'+ds;
 
 function getEntries(ds){return ld(EK(ds),[]);}
 function saveEntries(ds,arr){sv(EK(ds),arr);}
-function getActivity(ds){return ld(AK(ds),{sleep:7,sitting:8,training:0,cardio:0,steps:0});}
+function getActivity(ds){return ld(AK(ds),{sleep:7,sitting:8,standing:0,training:0,cardio:0,steps:0});}
 function saveActivity(ds,a){sv(AK(ds),a);}
 function getProfile(){return ld('nutr_p',{gender:'M',age:30,height:180,weight:80,targetWeight:75,activity:1.4,goal:'fat'});}
 function saveProfile(p){sv('nutr_p',p);}
@@ -254,13 +254,14 @@ function calcPAL(ds){
   const act=getActivity(ds);
   const sleepH=Math.min(act.sleep||7,16);
   const sitH=Math.min(act.sitting||8,20);
+  const standH=Math.min(act.standing||0,12);
   const trainH=(act.training||0)/60;
   const cardioH=(act.cardio||0)/60;
   const stepsH=Math.min((act.steps||0)/6000,4);
-  const restH=Math.max(24-sleepH-sitH-trainH-cardioH-stepsH,0);
-  const sum=sleepH*0.95+sitH*1.2+trainH*2.2+cardioH*4.0+stepsH*1.8+restH*1.4;
+  const restH=Math.max(24-sleepH-sitH-standH-trainH-cardioH-stepsH,0);
+  const sum=sleepH*0.95+sitH*1.2+standH*1.65+trainH*2.2+cardioH*4.0+stepsH*1.8+restH*1.4;
   return{pal:Math.round(sum/24*100)/100,sum:Math.round(sum*100)/100,
-    sleepH:sleepH,sitH:sitH,trainH:trainH,cardioH:cardioH,stepsH:stepsH,restH:Math.round(restH*100)/100};
+    sleepH:sleepH,sitH:sitH,standH:standH,trainH:trainH,cardioH:cardioH,stepsH:stepsH,restH:Math.round(restH*100)/100};
 }
 
 function calcDayTarget(ds){
@@ -761,6 +762,7 @@ function renderAkt(){
   var blocks=[
     {id:'pbSleep',label:'😴 Schlaf',h:pal.sleepH,pal:0.95,color:'var(--blue)'},
     {id:'pbSit',label:'🪑 Sitzen',h:pal.sitH,pal:1.2,color:'var(--text2)'},
+    {id:'pbStand',label:'🧍 Stehend/Gehend',h:pal.standH,pal:1.65,color:'var(--amber)'},
     {id:'pbTrain',label:'🏋️ Krafttraining',h:Math.round(pal.trainH*100)/100,pal:2.2,color:'var(--green)'},
     {id:'pbCardio',label:'🚣 Zone 2 / Cardio',h:Math.round(pal.cardioH*100)/100,pal:4.0,color:'var(--amber)'},
     {id:'pbSteps',label:'🚶 Schritte/Gehen',h:Math.round(pal.stepsH*100)/100,pal:1.8,color:'var(--teal)'},
@@ -796,6 +798,7 @@ function renderAkt(){
   var sliders=[
     {id:'slSleep',label:'😴 Schlaf',unit:'Stunden',val:act.sleep||7,min:0,max:14,step:0.5,hint:'PAL 0.95'},
     {id:'slSit',label:'🪑 Sitzend (Büro, Couch, Auto)',unit:'Stunden',val:act.sitting||8,min:0,max:20,step:0.5,hint:'PAL 1.2'},
+    {id:'slStand',label:'🧍 Stehend/Gehend',unit:'Stunden',val:act.standing||0,min:0,max:12,step:0.5,hint:'PAL 1.65'},
     {id:'slTrain',label:'🏋️ Krafttraining',unit:'Minuten',val:act.training||0,min:0,max:180,step:5,hint:'PAL 2.2'},
     {id:'slCardio',label:'🚣 Zone 2 / Cardio',unit:'Minuten',val:act.cardio||0,min:0,max:120,step:5,hint:'PAL 4.0'},
     {id:'slSteps',label:'🚶 Schritte',unit:'Schritte',val:act.steps||0,min:0,max:30000,step:500,hint:'PAL 1.8'},
@@ -811,7 +814,7 @@ function renderAkt(){
       '<span class="slider-unit">'+s.unit+'</span>'+
       '</div></div></div>';
   });
-  var used=pal.sleepH+pal.sitH+pal.trainH+pal.cardioH+pal.stepsH;
+  var used=pal.sleepH+pal.sitH+pal.standH+pal.trainH+pal.cardioH+pal.stepsH;
   var rest=Math.max(24-used,0);
   var hColor=used>24?'var(--red)':rest<2?'var(--amber)':'var(--text3)';
   h+='<div class="hours-check" id="hoursCheckVal" style="color:'+hColor+'">Verbucht: '+Math.round(used*10)/10+'h · Restzeit (leicht aktiv): '+Math.round(rest*10)/10+'h</div>';
@@ -825,6 +828,7 @@ function saveAct(){
   var a={
     sleep:parseFloat(document.getElementById('slSleepNum')?document.getElementById('slSleepNum').value:7)||0,
     sitting:parseFloat(document.getElementById('slSitNum')?document.getElementById('slSitNum').value:8)||0,
+    standing:parseFloat(document.getElementById('slStandNum')?document.getElementById('slStandNum').value:0)||0,
     training:parseFloat(document.getElementById('slTrainNum')?document.getElementById('slTrainNum').value:0)||0,
     cardio:parseFloat(document.getElementById('slCardioNum')?document.getElementById('slCardioNum').value:0)||0,
     steps:parseFloat(document.getElementById('slStepsNum')?document.getElementById('slStepsNum').value:0)||0,
@@ -856,6 +860,7 @@ function updateAktLiveValues(){
   var blocks=[
     {id:'pbSleep',h:pal.sleepH,pal:0.95},
     {id:'pbSit',h:pal.sitH,pal:1.2},
+    {id:'pbStand',h:pal.standH,pal:1.65},
     {id:'pbTrain',h:Math.round(pal.trainH*100)/100,pal:2.2},
     {id:'pbCardio',h:Math.round(pal.cardioH*100)/100,pal:4.0},
     {id:'pbSteps',h:Math.round(pal.stepsH*100)/100,pal:1.8},
@@ -869,7 +874,7 @@ function updateAktLiveValues(){
     if(valEl)valEl.textContent=contrib;
   });
 
-  var used=pal.sleepH+pal.sitH+pal.trainH+pal.cardioH+pal.stepsH;
+  var used=pal.sleepH+pal.sitH+pal.standH+pal.trainH+pal.cardioH+pal.stepsH;
   var rest=Math.max(24-used,0);
   var hColor=used>24?'var(--red)':rest<2?'var(--amber)':'var(--text3)';
   var hc=document.getElementById('hoursCheckVal');
@@ -885,18 +890,20 @@ async function analyzeActivity(){
   try{
     var prompt='Extrahiere Aktivitätsdaten aus diesem Text: "'+text+'"\n\n'+
       'Antworte NUR mit diesem JSON-Objekt (keine Backticks, kein Text):\n'+
-      '{"sleep":7,"sitting":8,"training":0,"cardio":0,"steps":0}\n\n'+
+      '{"sleep":7,"sitting":8,"standing":0,"training":0,"cardio":0,"steps":0}\n\n'+
       'sleep = Schlafstunden (Dezimal ok, z.B. 7.5)\n'+
       'sitting = Stunden sitzend/Büro/Auto/Couch (Dezimal ok)\n'+
+      'standing = Stunden stehend oder gehend bei der Arbeit, z.B. Meetings im Stehen, Praxisbesuche, Standing Desk (Dezimal ok)\n'+
       'training = Minuten Krafttraining/Gewichte (nur Ganzzahl)\n'+
       'cardio = Minuten Zone 2/Ausdauer/Rudern/Radfahren/Laufen/Schwimmen (nur Ganzzahl, NICHT Krafttraining)\n'+
       'steps = Schritte (Ganzzahl)\n'+
-      'Falls ein Wert nicht genannt: Standardwert verwenden (sleep:7, sitting:8, training:0, cardio:0, steps:0)';
+      'Falls ein Wert nicht genannt: Standardwert verwenden (sleep:7, sitting:8, standing:0, training:0, cardio:0, steps:0)';
     var raw=await callAI([{role:'user',content:prompt}]);
     var result=JSON.parse(raw.replace(/```json|```/g,'').trim());
     saveActivity(viewDate,{
       sleep:parseFloat(result.sleep)||7,
       sitting:parseFloat(result.sitting)||8,
+      standing:parseFloat(result.standing)||0,
       training:parseFloat(result.training)||0,
       cardio:parseFloat(result.cardio)||0,
       steps:parseFloat(result.steps)||0,
