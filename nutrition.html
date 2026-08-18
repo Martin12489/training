@@ -156,6 +156,9 @@ html,body{height:100%;background:#0A0A08;font-family:-apple-system,BlinkMacSyste
 .slider-row{display:flex;align-items:center;gap:10px}
 .slider-row input[type=range]{flex:1;accent-color:var(--green);height:4px}
 .slider-val{font-size:17px;font-weight:800;min-width:65px;text-align:right;line-height:1}
+.slider-num-inp{width:70px;height:36px;border:1px solid var(--border2);border-radius:var(--rxs);background:var(--s3);color:var(--text);font-size:16px;font-weight:800;text-align:right;padding:0 8px}
+input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+input[type=number]{-moz-appearance:textfield}
 .slider-unit{font-size:11px;color:var(--text3)}
 .hours-check{font-size:11px;text-align:center;padding:8px;border-top:1px solid var(--border);margin-top:8px}
 /* AI ACT */
@@ -213,11 +216,12 @@ function dayName(d){return['So','Mo','Di','Mi','Do','Fr','Sa'][d.getDay()];}
 // ── DATA KEYS ─────────────────────────────────────────────────────
 const EK=(ds)=>'nutr_e_'+ds;
 const WK=(ds)=>'nutr_w_'+ds;
+const WAISTK=(ds)=>'nutr_waist_'+ds;
 const AK=(ds)=>'nutr_a_'+ds;
 
 function getEntries(ds){return ld(EK(ds),[]);}
 function saveEntries(ds,arr){sv(EK(ds),arr);}
-function getActivity(ds){return ld(AK(ds),{sleep:7,sitting:8,training:0,steps:0});}
+function getActivity(ds){return ld(AK(ds),{sleep:7,sitting:8,training:0,cardio:0,steps:0});}
 function saveActivity(ds,a){sv(AK(ds),a);}
 function getProfile(){return ld('nutr_p',{gender:'M',age:30,height:180,weight:80,targetWeight:75,activity:1.4,goal:'fat'});}
 function saveProfile(p){sv('nutr_p',p);}
@@ -251,11 +255,12 @@ function calcPAL(ds){
   const sleepH=Math.min(act.sleep||7,16);
   const sitH=Math.min(act.sitting||8,20);
   const trainH=(act.training||0)/60;
+  const cardioH=(act.cardio||0)/60;
   const stepsH=Math.min((act.steps||0)/6000,4);
-  const restH=Math.max(24-sleepH-sitH-trainH-stepsH,0);
-  const sum=sleepH*0.95+sitH*1.2+trainH*2.2+stepsH*1.8+restH*1.4;
+  const restH=Math.max(24-sleepH-sitH-trainH-cardioH-stepsH,0);
+  const sum=sleepH*0.95+sitH*1.2+trainH*2.2+cardioH*4.0+stepsH*1.8+restH*1.4;
   return{pal:Math.round(sum/24*100)/100,sum:Math.round(sum*100)/100,
-    sleepH:sleepH,sitH:sitH,trainH:trainH,stepsH:stepsH,restH:Math.round(restH*100)/100};
+    sleepH:sleepH,sitH:sitH,trainH:trainH,cardioH:cardioH,stepsH:stepsH,restH:Math.round(restH*100)/100};
 }
 
 function calcDayTarget(ds){
@@ -344,7 +349,7 @@ function renderHeute(){
     '<div class="hero-title">'+(viewDate===todayStr()?'Heute · '+new Date().toLocaleDateString('de-DE',{weekday:'long'}):new Date(viewDate+'T12:00:00').toLocaleDateString('de-DE',{weekday:'long',day:'numeric',month:'short'}))+'</div>'+
     '<div class="hero-row"><span class="hero-l">Ziel</span><span class="hero-r">'+(t?t.kcal:'–')+' kcal</span></div>'+
     '<div class="hero-row"><span class="hero-l">Rest</span><span class="hero-r" style="color:'+(kcalOver?'var(--red)':'var(--green)')+'">'+kcalRest+' kcal</span></div>'+
-    (t?'<div class="hero-row"><span class="hero-l">TEE ⚡'+t.pal+'</span><span class="hero-r">'+t.tdee+' kcal</span></div>':'')+'</div></div>';
+    (t?'<div class="hero-row"><span class="hero-l">Tagesverbrauch ⚡'+t.pal+'</span><span class="hero-r">'+t.tdee+' kcal</span></div>':'')+'</div></div>';
 
   // Makros
   var macros=[
@@ -363,11 +368,15 @@ function renderHeute(){
   });
   h+='</div>';
 
-  // Gewicht
+  // Gewicht + Bauchumfang
   var tw=ld(WK(ds),'');
+  var tWaist=ld(WAISTK(ds),'');
   h+='<div class="w-row"><span style="font-size:13px;color:var(--text2);flex:1">⚖️ Gewicht heute</span>'+
     '<input class="w-inp" type="number" id="wInp" value="'+tw+'" placeholder="kg" step="0.1"/>'+
-    '<button class="w-btn" onclick="logW()">OK</button></div>';
+    '<button class="w-btn" onclick="logW()">OK</button></div>'+
+    '<div class="w-row"><span style="font-size:13px;color:var(--text2);flex:1">📏 Bauchumfang heute</span>'+
+    '<input class="w-inp" type="number" id="waistInp" value="'+tWaist+'" placeholder="cm" step="0.5"/>'+
+    '<button class="w-btn" onclick="logWaist()">OK</button></div>';
 
   // Mahlzeit hinzufügen
   h+='<div class="card"><div class="add-tabs">'+
@@ -603,6 +612,10 @@ function logW(){
   var val=document.getElementById('wInp')?document.getElementById('wInp').value:'';
   if(!val)return;sv(WK(viewDate),parseFloat(val));renderHeute();
 }
+function logWaist(){
+  var val=document.getElementById('waistInp')?document.getElementById('waistInp').value:'';
+  if(!val)return;sv(WAISTK(viewDate),parseFloat(val));renderHeute();
+}
 
 function setAddMode(m){addMode=m;aiResult=null;renderHeute();}
 
@@ -647,6 +660,16 @@ function renderWoche(){
     weights.forEach(function(w){
       if(!w.w)return;
       h+='<div class="micro-row"><div class="micro-name" style="color:'+(w.isT?'var(--green)':'inherit')+'">'+w.day+'</div><div style="font-size:14px;font-weight:700;color:'+(w.isT?'var(--green)':'var(--text)')+'">'+w.w+' kg</div></div>';
+    });
+    h+='</div>';
+  }
+
+  var waists=days.map(function(d){return{day:dayName(d),w:ld(WAISTK(dateStr(d)),''),isT:dateStr(d)===todayDs};});
+  if(waists.some(function(w){return w.w;})){
+    h+='<div class="lbl">Bauchumfang-Verlauf</div><div class="card">';
+    waists.forEach(function(w){
+      if(!w.w)return;
+      h+='<div class="micro-row"><div class="micro-name" style="color:'+(w.isT?'var(--green)':'inherit')+'">'+w.day+'</div><div style="font-size:14px;font-weight:700;color:'+(w.isT?'var(--green)':'var(--text)')+'">'+w.w+' cm</div></div>';
     });
     h+='</div>';
   }
@@ -726,29 +749,30 @@ function renderAkt(){
 
   // PAL Result
   h+='<div class="pal-hero">'+
-    '<div class="pal-big" style="color:'+palColor+'">'+pal.pal+'</div>'+
-    '<div class="pal-sub">PAL-Wert heute · '+pal.sum+' Aktivitätspunkte ÷ 24h</div>'+
+    '<div class="pal-big" id="palBigVal" style="color:'+palColor+'">'+pal.pal+'</div>'+
+    '<div class="pal-sub" id="palSubVal">PAL-Wert heute · '+pal.sum+' Aktivitätspunkte ÷ 24h</div>'+
     '<div class="pal-grid">'+
-    '<div class="pal-box"><div class="pal-num" style="color:var(--text3)">'+bmr+'</div><div class="pal-lbl">BMR kcal</div></div>'+
-    '<div class="pal-box"><div class="pal-num" style="color:var(--amber)">'+tee+'</div><div class="pal-lbl">TEE kcal</div></div>'+
-    '<div class="pal-box"><div class="pal-num" style="color:var(--green)">'+goalKcal+'</div><div class="pal-lbl">Ziel kcal</div></div>'+
+    '<div class="pal-box"><div class="pal-num" id="palBmrVal" style="color:var(--text3)">'+bmr+'</div><div class="pal-lbl">Grundumsatz</div></div>'+
+    '<div class="pal-box"><div class="pal-num" id="palTeeVal" style="color:var(--amber)">'+tee+'</div><div class="pal-lbl">Tagesverbrauch</div></div>'+
+    '<div class="pal-box"><div class="pal-num" id="palGoalVal" style="color:var(--green)">'+goalKcal+'</div><div class="pal-lbl">Ziel kcal</div></div>'+
     '</div></div>';
 
   // Breakdown
   var blocks=[
-    {label:'😴 Schlaf',h:pal.sleepH,pal:0.95,color:'var(--blue)'},
-    {label:'🪑 Sitzen',h:pal.sitH,pal:1.2,color:'var(--text2)'},
-    {label:'🏋️ Krafttraining',h:Math.round(pal.trainH*100)/100,pal:2.2,color:'var(--green)'},
-    {label:'🚶 Schritte/Gehen',h:Math.round(pal.stepsH*100)/100,pal:1.8,color:'var(--teal)'},
-    {label:'💼 Restliche Zeit',h:pal.restH,pal:1.4,color:'var(--purple)'},
+    {id:'pbSleep',label:'😴 Schlaf',h:pal.sleepH,pal:0.95,color:'var(--blue)'},
+    {id:'pbSit',label:'🪑 Sitzen',h:pal.sitH,pal:1.2,color:'var(--text2)'},
+    {id:'pbTrain',label:'🏋️ Krafttraining',h:Math.round(pal.trainH*100)/100,pal:2.2,color:'var(--green)'},
+    {id:'pbCardio',label:'🚣 Zone 2 / Cardio',h:Math.round(pal.cardioH*100)/100,pal:4.0,color:'var(--amber)'},
+    {id:'pbSteps',label:'🚶 Schritte/Gehen',h:Math.round(pal.stepsH*100)/100,pal:1.8,color:'var(--teal)'},
+    {id:'pbRest',label:'💼 Restliche Zeit',h:pal.restH,pal:1.4,color:'var(--purple)'},
   ];
   h+='<div class="lbl">PAL Aufschlüsselung</div><div class="pal-breakdown">';
   blocks.forEach(function(b){
     var contrib=Math.round(b.h*b.pal*100)/100;
     h+='<div class="pb-row">'+
       '<div class="pb-label">'+b.label+'</div>'+
-      '<div class="pb-formula" style="color:var(--text3)">'+b.h+'h × '+b.pal+' = '+contrib+'</div>'+
-      '<div class="pb-val" style="color:'+b.color+'">'+contrib+'</div></div>';
+      '<div class="pb-formula" id="'+b.id+'" style="color:var(--text3)">'+b.h+'h × '+b.pal+' = '+contrib+'</div>'+
+      '<div class="pb-val" id="'+b.id+'Val" style="color:'+b.color+'">'+contrib+'</div></div>';
   });
   h+='</div>';
 
@@ -773,20 +797,24 @@ function renderAkt(){
     {id:'slSleep',label:'😴 Schlaf',unit:'Stunden',val:act.sleep||7,min:0,max:14,step:0.5,hint:'PAL 0.95'},
     {id:'slSit',label:'🪑 Sitzend (Büro, Couch, Auto)',unit:'Stunden',val:act.sitting||8,min:0,max:20,step:0.5,hint:'PAL 1.2'},
     {id:'slTrain',label:'🏋️ Krafttraining',unit:'Minuten',val:act.training||0,min:0,max:180,step:5,hint:'PAL 2.2'},
+    {id:'slCardio',label:'🚣 Zone 2 / Cardio',unit:'Minuten',val:act.cardio||0,min:0,max:120,step:5,hint:'PAL 4.0'},
     {id:'slSteps',label:'🚶 Schritte',unit:'Schritte',val:act.steps||0,min:0,max:30000,step:500,hint:'PAL 1.8'},
   ];
   sliders.forEach(function(s){
     h+='<div class="slider-item">'+
       '<div class="slider-head"><div class="slider-label">'+s.label+'</div><div class="slider-hint">'+s.hint+'</div></div>'+
       '<div class="slider-row">'+
-      '<input type="range" id="'+s.id+'" min="'+s.min+'" max="'+s.max+'" step="'+s.step+'" value="'+s.val+'" oninput="document.getElementById(\''+s.id+'Val\').textContent=this.value;saveAct()"/>'+
-      '<div style="font-size:17px;font-weight:800;color:var(--text);min-width:65px;text-align:right"><span id="'+s.id+'Val">'+s.val+'</span><span class="slider-unit"> '+s.unit+'</span></div>'+
-      '</div></div>';
+      '<input type="range" id="'+s.id+'" min="'+s.min+'" max="'+s.max+'" step="'+s.step+'" value="'+s.val+'" oninput="document.getElementById(\''+s.id+'Num\').value=this.value;saveAct()"/>'+
+      '<div style="display:flex;align-items:center;gap:4px;min-width:90px;justify-content:flex-end">'+
+      '<input type="number" id="'+s.id+'Num" class="slider-num-inp" value="'+s.val+'" min="'+s.min+'" max="'+s.max+'" step="'+s.step+'" '+
+      'oninput="document.getElementById(\''+s.id+'\').value=this.value;saveAct()"/>'+
+      '<span class="slider-unit">'+s.unit+'</span>'+
+      '</div></div></div>';
   });
-  var used=pal.sleepH+pal.sitH+pal.trainH+pal.stepsH;
+  var used=pal.sleepH+pal.sitH+pal.trainH+pal.cardioH+pal.stepsH;
   var rest=Math.max(24-used,0);
   var hColor=used>24?'var(--red)':rest<2?'var(--amber)':'var(--text3)';
-  h+='<div class="hours-check" style="color:'+hColor+'">Verbucht: '+Math.round(used*10)/10+'h · Restzeit (leicht aktiv): '+Math.round(rest*10)/10+'h</div>';
+  h+='<div class="hours-check" id="hoursCheckVal" style="color:'+hColor+'">Verbucht: '+Math.round(used*10)/10+'h · Restzeit (leicht aktiv): '+Math.round(rest*10)/10+'h</div>';
   h+='</div>';
 
   document.getElementById('vAktivitaet').innerHTML=h;
@@ -795,12 +823,57 @@ function renderAkt(){
 function saveAct(){
   var ds=viewDate;
   var a={
-    sleep:parseFloat(document.getElementById('slSleep')?document.getElementById('slSleep').value:7)||7,
-    sitting:parseFloat(document.getElementById('slSit')?document.getElementById('slSit').value:8)||8,
-    training:parseFloat(document.getElementById('slTrain')?document.getElementById('slTrain').value:0)||0,
-    steps:parseFloat(document.getElementById('slSteps')?document.getElementById('slSteps').value:0)||0,
+    sleep:parseFloat(document.getElementById('slSleepNum')?document.getElementById('slSleepNum').value:7)||0,
+    sitting:parseFloat(document.getElementById('slSitNum')?document.getElementById('slSitNum').value:8)||0,
+    training:parseFloat(document.getElementById('slTrainNum')?document.getElementById('slTrainNum').value:0)||0,
+    cardio:parseFloat(document.getElementById('slCardioNum')?document.getElementById('slCardioNum').value:0)||0,
+    steps:parseFloat(document.getElementById('slStepsNum')?document.getElementById('slStepsNum').value:0)||0,
   };
-  saveActivity(ds,a);renderAkt();
+  saveActivity(ds,a);
+  updateAktLiveValues();
+}
+
+// Aktualisiert PAL/TEE/Ziel-Anzeige ohne die Eingabefelder neu zu rendern (behält Fokus beim Tippen)
+function updateAktLiveValues(){
+  var ds=viewDate;var pal=calcPAL(ds);
+  var p=getProfile();var bmr=Math.round(calcBMR(p));
+  var tee=bmr?Math.round(bmr*pal.pal):0;
+  var diff=p.weight-(p.targetWeight||p.weight);
+  var deficit=0;
+  if(diff>0)deficit=p.goal==='fat'?-300:p.goal==='recomp'?-150:0;
+  else if(diff<0)deficit=200;
+  var goalKcal=tee?Math.round(tee+deficit):0;
+  var palColor=pal.pal<1.3?'var(--blue)':pal.pal<1.6?'var(--green)':pal.pal<1.9?'var(--amber)':'var(--red)';
+
+  var palBig=document.getElementById('palBigVal');
+  if(palBig){palBig.textContent=pal.pal;palBig.style.color=palColor;}
+  var palSub=document.getElementById('palSubVal');
+  if(palSub)palSub.textContent=pal.sum+' Aktivitätspunkte ÷ 24h';
+  var bmrEl=document.getElementById('palBmrVal');if(bmrEl)bmrEl.textContent=bmr;
+  var teeEl=document.getElementById('palTeeVal');if(teeEl)teeEl.textContent=tee;
+  var goalEl=document.getElementById('palGoalVal');if(goalEl)goalEl.textContent=goalKcal;
+
+  var blocks=[
+    {id:'pbSleep',h:pal.sleepH,pal:0.95},
+    {id:'pbSit',h:pal.sitH,pal:1.2},
+    {id:'pbTrain',h:Math.round(pal.trainH*100)/100,pal:2.2},
+    {id:'pbCardio',h:Math.round(pal.cardioH*100)/100,pal:4.0},
+    {id:'pbSteps',h:Math.round(pal.stepsH*100)/100,pal:1.8},
+    {id:'pbRest',h:pal.restH,pal:1.4},
+  ];
+  blocks.forEach(function(b){
+    var contrib=Math.round(b.h*b.pal*100)/100;
+    var el=document.getElementById(b.id);
+    if(el)el.textContent=b.h+'h × '+b.pal+' = '+contrib;
+    var valEl=document.getElementById(b.id+'Val');
+    if(valEl)valEl.textContent=contrib;
+  });
+
+  var used=pal.sleepH+pal.sitH+pal.trainH+pal.cardioH+pal.stepsH;
+  var rest=Math.max(24-used,0);
+  var hColor=used>24?'var(--red)':rest<2?'var(--amber)':'var(--text3)';
+  var hc=document.getElementById('hoursCheckVal');
+  if(hc){hc.textContent='Verbucht: '+Math.round(used*10)/10+'h · Restzeit (leicht aktiv): '+Math.round(rest*10)/10+'h';hc.style.color=hColor;}
 }
 
 // ── AKTIVITÄT KI ──────────────────────────────────────────────────
@@ -812,18 +885,20 @@ async function analyzeActivity(){
   try{
     var prompt='Extrahiere Aktivitätsdaten aus diesem Text: "'+text+'"\n\n'+
       'Antworte NUR mit diesem JSON-Objekt (keine Backticks, kein Text):\n'+
-      '{"sleep":7,"sitting":8,"training":0,"steps":0}\n\n'+
+      '{"sleep":7,"sitting":8,"training":0,"cardio":0,"steps":0}\n\n'+
       'sleep = Schlafstunden (Dezimal ok, z.B. 7.5)\n'+
       'sitting = Stunden sitzend/Büro/Auto/Couch (Dezimal ok)\n'+
-      'training = Minuten Kraft-/Sporttraining (nur Ganzzahl)\n'+
+      'training = Minuten Krafttraining/Gewichte (nur Ganzzahl)\n'+
+      'cardio = Minuten Zone 2/Ausdauer/Rudern/Radfahren/Laufen/Schwimmen (nur Ganzzahl, NICHT Krafttraining)\n'+
       'steps = Schritte (Ganzzahl)\n'+
-      'Falls ein Wert nicht genannt: Standardwert verwenden (sleep:7, sitting:8, training:0, steps:0)';
+      'Falls ein Wert nicht genannt: Standardwert verwenden (sleep:7, sitting:8, training:0, cardio:0, steps:0)';
     var raw=await callAI([{role:'user',content:prompt}]);
     var result=JSON.parse(raw.replace(/```json|```/g,'').trim());
     saveActivity(viewDate,{
       sleep:parseFloat(result.sleep)||7,
       sitting:parseFloat(result.sitting)||8,
       training:parseFloat(result.training)||0,
+      cardio:parseFloat(result.cardio)||0,
       steps:parseFloat(result.steps)||0,
     });
   }catch(e){alert('Fehler: '+e.message);}
