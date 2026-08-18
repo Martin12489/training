@@ -280,6 +280,8 @@ var scanning=false;
 var viewDate=todayStr();
 var isRecording=false;
 var recognition=null;
+var scanAmount='';
+var scanUnit='ml';
 
 // ── NAVIGATION ────────────────────────────────────────────────────
 function setView(v){
@@ -384,7 +386,18 @@ function renderHeute(){
       '<div class="ai-hint">Mehrere Mahlzeiten in einer Nachricht möglich · Mikronährstoffe werden geschätzt</div>';
     if(aiResult)h+=renderAiResult();
   } else if(addMode==='foto'){
-    h+='<button onclick="document.getElementById(\'fileInput\').click()" style="width:100%;padding:13px;border-radius:var(--rsm);border:1px solid rgba(27,240,126,0.3);background:var(--gbg);color:var(--green);font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px">'+
+    h+='<div style="margin-bottom:10px">'+
+      '<div class="fl" style="margin-bottom:5px">Menge die du isst/trinkst (optional, aber empfohlen bei Etiketten)</div>'+
+      '<div style="display:flex;gap:8px">'+
+      '<input class="fi" type="number" id="scanAmount" placeholder="z.B. 330" value="'+scanAmount+'" style="flex:1;text-align:left" oninput="scanAmount=this.value"/>'+
+      '<select class="fi" id="scanUnit" style="width:90px" onchange="scanUnit=this.value">'+
+      '<option value="ml"'+(scanUnit==='ml'?' selected':'')+'>ml</option>'+
+      '<option value="g"'+(scanUnit==='g'?' selected':'')+'>g</option>'+
+      '<option value="portion"'+(scanUnit==='portion'?' selected':'')+'>Portion(en)</option>'+
+      '</select></div>'+
+      '<div class="ai-hint">Bei Etiketten stehen Werte meist pro 100ml/100g – die App rechnet automatisch auf deine Menge hoch. Leer lassen = KI schätzt die sichtbare Portion.</div>'+
+      '</div>'+
+      '<button onclick="document.getElementById(\'fileInput\').click()" style="width:100%;padding:13px;border-radius:var(--rsm);border:1px solid rgba(27,240,126,0.3);background:var(--gbg);color:var(--green);font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px">'+
       (scanning?'⏳ Analysiere...':'📷 Etikett oder Mahlzeit fotografieren')+'</button>'+
       '<div class="ai-hint">Nährwertetikett oder fertige Mahlzeit – KI erkennt beides</div>';
     if(aiResult)h+=renderAiResult();
@@ -531,11 +544,26 @@ async function handleScan(event){
   try{
     var b64=await new Promise(function(res,rej){var r=new FileReader();r.onload=function(){res(r.result.split(',')[1]);};r.onerror=rej;r.readAsDataURL(file);});
     var mime=file.type||'image/jpeg';
+    var amountText='';
+    if(scanAmount&&parseFloat(scanAmount)>0){
+      if(scanUnit==='portion'){
+        amountText='Der Nutzer isst/trinkt '+scanAmount+' Portion(en) davon. Falls das Etikett eine Portionsgröße angibt, rechne die Nährwerte für '+scanAmount+' Portion(en) hoch.';
+      } else {
+        amountText='WICHTIG: Der Nutzer isst/trinkt genau '+scanAmount+scanUnit+' davon. '+
+          'Falls das Etikett Nährwerte pro 100'+scanUnit+' angibt (Standard bei deutschen Etiketten), '+
+          'MUSST du diese Werte auf '+scanAmount+scanUnit+' hochrechnen (Faktor '+(parseFloat(scanAmount)/100)+'). '+
+          'Gib NIEMALS die reinen 100'+scanUnit+'-Werte zurück, sondern immer die für die tatsächlich konsumierte Menge von '+scanAmount+scanUnit+'.';
+      }
+    } else {
+      amountText='Keine Menge angegeben – falls es ein Etikett mit "pro 100ml/100g" ist, nutze die dort angegebene Gesamtpackungsgröße oder schätze eine übliche Portion. Falls es eine fertige Mahlzeit ist, schätze die sichtbare Portion.';
+    }
     var prompt='Analysiere dieses Bild.\n'+
-      'Falls Nährwertetikett: lies Werte pro Portion aus.\n'+
+      'Falls Nährwertetikett: lies die Tabelle genau ab (meist "pro 100ml" oder "pro 100g" beschriftet).\n'+
       'Falls Mahlzeit/Speise: schätze Nährwerte der gesamten sichtbaren Portion.\n\n'+
-      'Antworte NUR mit JSON-Array:\n'+
-      '[{"name":"kurze Beschreibung","meal":"snack","kcal":0,"protein":0,"carbs":0,"fat":0,"fiber":0,"sugar":0,"sodium":0,"calcium":0,"iron":0,"vitC":0,"vitD":0,"magnesium":0,"omega3":0}]';
+      amountText+'\n\n'+
+      'Der Name soll die tatsächliche Menge enthalten, z.B. "330ml Kaffee-Milchgetränk" nicht nur "Kaffee-Milchgetränk".\n\n'+
+      'Antworte NUR mit JSON-Array (keine Backticks, kein Text):\n'+
+      '[{"name":"kurze Beschreibung mit Menge","meal":"snack","kcal":0,"protein":0,"carbs":0,"fat":0,"fiber":0,"sugar":0,"sodium":0,"calcium":0,"iron":0,"vitC":0,"vitD":0,"magnesium":0,"omega3":0}]';
     var msgs=[{role:'user',content:[{type:'image',source:{type:'base64',media_type:mime,data:b64}},{type:'text',text:prompt}]}];
     var raw=await callAI(msgs);
     var parsed=JSON.parse(raw.replace(/```json|```/g,'').trim());
@@ -551,7 +579,7 @@ function addAiEntry(){
     var meal=multi?r.meal:(document.getElementById('mealTypeAi_'+i)?document.getElementById('mealTypeAi_'+i).value:r.meal||'snack');
     entries.push(Object.assign({},r,{meal:meal,id:Date.now()+i}));
   });
-  saveEntries(ds,entries);aiResult=null;renderHeute();
+  saveEntries(ds,entries);aiResult=null;scanAmount='';renderHeute();
 }
 
 function addManual(){
