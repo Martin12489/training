@@ -434,7 +434,7 @@ function renderHeute(){
       '<div class="card" style="padding:0;overflow:hidden">';
     te.forEach(function(e){
       h+='<div class="meal-row">'+
-        '<div><div class="meal-name">'+e.name+'</div><div class="meal-macro">'+Math.round(e.protein||0)+'g P · '+Math.round(e.carbs||0)+'g K · '+Math.round(e.fat||0)+'g F</div></div>'+
+        '<div><div class="meal-name">'+e.name+'</div><div class="meal-macro">'+Math.round(e.protein||0)+'g P · '+Math.round(e.carbs||0)+'g K · '+Math.round(e.fat||0)+'g F · '+Math.round(e.sugar||0)+'g Z</div></div>'+
         '<div style="display:flex;align-items:center"><span style="font-size:14px;font-weight:700;color:var(--amber)">'+Math.round(e.kcal)+' kcal</span>'+
         '<button class="meal-del" onclick="delEntry(\''+ds+'\','+e.id+')">×</button></div></div>';
     });
