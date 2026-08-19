@@ -38,15 +38,15 @@ html,body{height:100%;background:#0A0A08;font-family:-apple-system,BlinkMacSyste
 .card{background:var(--s1);border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:12px}
 .card-sm{background:var(--s1);border:1px solid var(--border);border-radius:var(--rsm);padding:12px;margin-bottom:8px}
 /* MACRO RINGS */
-.macro-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:12px}
-.ring-card{background:var(--s1);border:1px solid var(--border);border-radius:var(--radius);padding:12px;display:flex;align-items:center;gap:10px}
-.rw{position:relative;width:52px;height:52px;flex-shrink:0}
+.macro-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+.ring-card{background:var(--s1);border:1px solid var(--border);border-radius:var(--rsm);padding:10px 6px;display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center}
+.rw{position:relative;width:44px;height:44px;flex-shrink:0}
 .rw svg{transform:rotate(-90deg)}
-.rn{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:10px;font-weight:800;color:var(--text)}
-.ri{flex:1;min-width:0}
-.ri-l{font-size:9px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--text3);margin-bottom:2px}
-.ri-v{font-size:17px;font-weight:800;letter-spacing:-.5px;line-height:1}
-.ri-t{font-size:10px;color:var(--text3);margin-top:2px}
+.rn{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:9px;font-weight:800;color:var(--text)}
+.ri{flex:1;min-width:0;text-align:center;width:100%}
+.ri-l{font-size:8px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--text3);margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ri-v{font-size:14px;font-weight:800;letter-spacing:-.3px;line-height:1}
+.ri-t{font-size:9px;color:var(--text3);margin-top:2px}
 /* KCAL HERO */
 .hero{background:var(--s1);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:12px;display:flex;align-items:center;gap:14px}
 .hero-rw{position:relative;width:80px;height:80px;flex-shrink:0}
@@ -132,6 +132,12 @@ html,body{height:100%;background:#0A0A08;font-family:-apple-system,BlinkMacSyste
 .w-row{display:flex;align-items:center;gap:10px;background:var(--s1);border:1px solid var(--border);border-radius:var(--rsm);padding:10px 14px;margin-bottom:12px}
 .w-inp{width:70px;height:34px;border:1px solid var(--border2);border-radius:var(--rxs);background:var(--s3);color:var(--text);font-size:15px;font-weight:700;padding:0 8px;text-align:center}
 .w-btn{padding:6px 14px;border-radius:var(--rxs);background:var(--green);border:none;color:#000;font-size:12px;font-weight:700;cursor:pointer}
+.supp-card{background:var(--s1);border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px;margin-bottom:12px}
+.supp-row{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--border)}
+.supp-row:last-child{border-bottom:none}
+.supp-name{font-size:14px;color:var(--text);font-weight:500}
+.supp-check{width:26px;height:26px;border-radius:8px;border:1.5px solid var(--border2);background:var(--s3);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;font-size:14px;color:transparent}
+.supp-check.on{background:var(--green);border-color:var(--green);color:#000}
 /* AKTIVITÄT */
 .pal-hero{background:var(--s1);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:12px}
 .pal-big{font-size:48px;font-weight:800;letter-spacing:-3px;line-height:1;margin-bottom:2px}
@@ -217,6 +223,15 @@ function dayName(d){return['So','Mo','Di','Mi','Do','Fr','Sa'][d.getDay()];}
 const EK=(ds)=>'nutr_e_'+ds;
 const WK=(ds)=>'nutr_w_'+ds;
 const WAISTK=(ds)=>'nutr_waist_'+ds;
+const SUPPK=(ds)=>'nutr_supp_'+ds;
+var DEFAULT_SUPPS=['B12','D3/K2','Omega 3','Kreatin','Daily Supplements'];
+function getSupps(ds){return ld(SUPPK(ds),{});}
+function toggleSupp(ds,name){
+  var s=getSupps(ds);
+  s[name]=!s[name];
+  sv(SUPPK(ds),s);
+  renderHeute();
+}
 const AK=(ds)=>'nutr_a_'+ds;
 
 function getEntries(ds){return ld(EK(ds),[]);}
@@ -357,13 +372,15 @@ function renderHeute(){
     {key:'protein',label:'Protein',color:'var(--green)',unit:'g',target:t?t.protein:0},
     {key:'carbs',label:'Kohlenhydrate',color:'var(--blue)',unit:'g',target:t?t.carbs:0},
     {key:'fat',label:'Fett',color:'var(--purple)',unit:'g',target:t?t.fat:0},
+    {key:'sugar',label:'Zucker',color:'var(--amber)',unit:'g',target:50},
     {key:'fiber',label:'Ballaststoffe',color:'var(--teal)',unit:'g',target:30},
+    {key:'sodium',label:'Salz',color:'var(--red)',unit:'mg',target:2300},
   ];
   h+='<div class="macro-grid">';
   macros.forEach(function(m){
     var val=Math.round(tots[m.key]*10)/10;var over=(val>m.target&&m.target>0);
     h+='<div class="ring-card">'+
-      '<div class="rw">'+ring(val,m.target,m.color)+'<div class="rn" style="color:'+(over?'var(--red)':m.color)+'">'+val+'</div></div>'+
+      '<div class="rw">'+ring(val,m.target,m.color,44,4)+'<div class="rn" style="color:'+(over?'var(--red)':m.color)+'">'+val+'</div></div>'+
       '<div class="ri"><div class="ri-l">'+m.label+'</div><div class="ri-v" style="color:'+(over?'var(--red)':m.color)+'">'+val+m.unit+'</div><div class="ri-t">/ '+(m.target||'–')+m.unit+'</div></div>'+
       '</div>';
   });
@@ -378,6 +395,16 @@ function renderHeute(){
     '<div class="w-row"><span style="font-size:13px;color:var(--text2);flex:1">📏 Bauchumfang heute</span>'+
     '<input class="w-inp" type="number" id="waistInp" value="'+tWaist+'" placeholder="cm" step="0.5"/>'+
     '<button class="w-btn" onclick="logWaist()">OK</button></div>';
+
+  // Supplemente
+  var supps=getSupps(ds);
+  h+='<div class="lbl">💊 Supplemente heute</div><div class="supp-card">';
+  DEFAULT_SUPPS.forEach(function(name){
+    var checked=!!supps[name];
+    h+='<div class="supp-row"><span class="supp-name">'+name+'</span>'+
+      '<button class="supp-check'+(checked?' on':'')+'" onclick="toggleSupp(\''+ds+'\',\''+name+'\')">'+(checked?'✓':'')+'</button></div>';
+  });
+  h+='</div>';
 
   // Mahlzeit hinzufügen
   h+='<div class="card"><div class="add-tabs">'+
@@ -443,8 +470,6 @@ function renderHeute(){
 
   // Mikronährstoffe
   var micros=[
-    {key:'sugar',label:'Zucker',target:50,unit:'g',color:'var(--amber)'},
-    {key:'sodium',label:'Natrium',target:2300,unit:'mg',color:'var(--red)'},
     {key:'calcium',label:'Kalzium',target:1000,unit:'mg',color:'var(--blue)'},
     {key:'iron',label:'Eisen',target:14,unit:'mg',color:'var(--purple)'},
     {key:'vitC',label:'Vitamin C',target:100,unit:'mg',color:'var(--green)'},
@@ -674,6 +699,18 @@ function renderWoche(){
     });
     h+='</div>';
   }
+
+  // Supplement-Compliance
+  h+='<div class="lbl">💊 Supplement-Compliance</div><div class="supp-card">';
+  DEFAULT_SUPPS.forEach(function(name){
+    var count=days.filter(function(d){return !!getSupps(dateStr(d))[name];}).length;
+    var pct=Math.round(count/7*100);
+    var color=pct>=85?'var(--green)':pct>=50?'var(--amber)':'var(--red)';
+    h+='<div class="supp-row"><span class="supp-name">'+name+'</span>'+
+      '<span style="font-size:13px;font-weight:700;color:'+color+'">'+count+'/7 Tage</span></div>';
+  });
+  h+='</div>';
+
   document.getElementById('vWoche').innerHTML=h;
 }
 
